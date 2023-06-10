@@ -1,6 +1,0 @@
-{
-    "numeric_columns": [],
-    "category_columns": [],
-    "target_column": "label",
-    "ml_type": "classification"
-}

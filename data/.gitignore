@@ -9,3 +9,6 @@ raw_data/**
 
 train_data/**
 !train_data/.gitkeep
+
+preprocessed_data/**
+!preprocessed_data/.gitkeep
