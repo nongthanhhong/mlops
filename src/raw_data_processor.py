@@ -65,9 +65,10 @@ class RawDataProcessor:
             training_data, prob_config.categorical_cols
             )
             
+            
             with open(prob_config.category_index_path, "wb") as f:
                 pickle.dump(category_index, f)
-                
+
         else:
             training_data = pd.read_parquet(prob_config.raw_data_path)
         
