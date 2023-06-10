@@ -5,7 +5,7 @@ teardown:
 
 #airflow for data pineline
 airflow_up:
-	bash run.sh  data_pineline/airflow up	
+	bash run.sh  platform/airflow up	
 
 # mlflow
 mlflow_up:
