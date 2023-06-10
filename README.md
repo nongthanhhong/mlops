@@ -1,7 +1,3 @@
-# MLOps Marathon 2023 - Sample solution
-
-This repository is the sample solution for MLOps Marathon 2023.
-
 ## Quickstart
 
 1.  Prepare environment

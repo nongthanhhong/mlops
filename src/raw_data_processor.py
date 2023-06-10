@@ -63,15 +63,6 @@ class RawDataProcessor:
             training_data = pd.read_parquet(prob_config.preprocessed_data_path)
         else:
             training_data = pd.read_parquet(prob_config.raw_data_path)
-
-        # if not prob_config.use_eda:
-        #     training_data = pd.read_parquet(prob_config.raw_data_path)
-        #     training_data, category_index = RawDataProcessor.build_category_features(
-        #         training_data, prob_config.categorical_cols
-        #     )
-
-        #     with open(prob_config.category_index_path, "wb") as f:
-        #         pickle.dump(category_index, f)
         
         train, dev = train_test_split(
             training_data,
@@ -130,5 +121,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     prob_config = get_prob_config(args.phase_id, args.prob_id)
-    prob_config.use_eda = args.use_eda
     RawDataProcessor.process_raw_data(prob_config)

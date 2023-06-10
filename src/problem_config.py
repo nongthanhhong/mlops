@@ -21,7 +21,6 @@ class ProblemConfig:
     # for original data
     raw_data_path: str
     preprocessed_data_path: str
-    use_eda: bool
     feature_config_path: str
     category_index_path: str
     train_data_path: str
