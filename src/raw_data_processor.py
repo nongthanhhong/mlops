@@ -61,6 +61,9 @@ class RawDataProcessor:
         '''
         if os.path.isfile(prob_config.preprocessed_data_path):
             training_data = pd.read_parquet(prob_config.preprocessed_data_path)
+
+        else:
+            training_data = pd.read_parquet(prob_config.raw_data_path)
             training_data, category_index = RawDataProcessor.build_category_features(
             training_data, prob_config.categorical_cols
             )
@@ -68,9 +71,6 @@ class RawDataProcessor:
             
             with open(prob_config.category_index_path, "wb") as f:
                 pickle.dump(category_index, f)
-
-        else:
-            training_data = pd.read_parquet(prob_config.raw_data_path)
         
         train, dev = train_test_split(
             training_data,
