@@ -79,6 +79,9 @@ class DataAnalyzer:
         """
         Visualizes the data by displaying histograms of all numeric columns and bar charts of all categorical columns.
         """
+
+
+
         data = self.org
         fraud = len(data[data[self.target_col] == 1]) / len(data) * 100
         nofraud = len(data[data[self.target_col] == 0]) / len(data) * 100
@@ -337,7 +340,7 @@ class DataAnalyzer:
         with open(self.eda_path / "features_config.json", 'w+') as f:
             json.dump(config, f, indent=4)
 
-    def validate_data(self, use_eda = False):
+    def validate_data(self, use_eda = True):
         # Validate the data
         if self.data is None:
             print("Data is empty ???")
@@ -359,27 +362,15 @@ class DataAnalyzer:
         )
             X = data.drop(columns=[self.target_col])
             y = data[self.target_col]
-
-        # Split data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
-
-        # Calculate class weights
-        class_weights = [len(y_train) / (2 * sum(y_train == 0)), len(y_train) / (2 * sum(y_train == 1))]
-
-        # Convert data to DMatrix format
-        # dtrain = xgb.DMatrix(X_train, label=y_train, weight=[class_weights[i] for i in y_train])
-        # dtest = xgb.DMatrix(X_test, label=y_test)
-
         # Set XGBoost parameters
         params = {
             'objective': 'binary:logistic',
             'eval_metric': 'auc'
         }
 
-        # # Train XGBoost model
-        # model = xgb.train(params, dtrain)
-
-        dmatrix = xgb.DMatrix(X_train, label=y_train, weight=[class_weights[i] for i in y_train])
+        # Train XGBoost model
+        # Convert data to DMatrix format
+        dmatrix = xgb.DMatrix(X, label=y)
 
         cv_results = xgb.cv(dtrain=dmatrix, params=params, nfold=5, num_boost_round=15, metrics='auc', as_pandas=True)
         if cv_results['test-auc-mean'].max() >= 0.99:
@@ -387,15 +378,7 @@ class DataAnalyzer:
         else:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Harder bro!!!")
     
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
-    parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB1)
-    
-    args = parser.parse_args()
-    
-    prob_config = get_prob_config(args.phase_id, args.prob_id)
+def main(prob_config, sample):
 
     eda = DataAnalyzer(prob_config)
     
@@ -411,3 +394,16 @@ if __name__ == "__main__":
 
     # eda.export_data()
     eda.validate_data()
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
+    parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB1)
+    
+    args = parser.parse_args()
+    
+    prob_config = get_prob_config(args.phase_id, args.prob_id)
+
+    main(prob_config)

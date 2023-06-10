@@ -43,16 +43,20 @@ class ModelTrainer:
             train_y = np.concatenate((train_y, captured_y))
             logging.info(f"added {len(captured_x)} captured samples")
 
-        # train model
         if len(np.unique(train_y)) == 2:
             objective = "binary:logistic"
         else:
             objective = "multi:softprob"
+
+
         model = xgb.XGBClassifier(objective=objective, **model_params)
-        model.fit(train_x, train_y)
+        model.fit(train_x[:-10000], train_y[:-10000], eval_set=[(train_x[10000:], train_y[10000:])], verbose=100, early_stopping_rounds=50)
+
+
 
         # evaluate
         test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+
         predictions = model.predict(test_x)
         auc_score = roc_auc_score(test_y, predictions)
         metrics = {"test_auc": auc_score}
@@ -81,7 +85,24 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     prob_config = get_prob_config(args.phase_id, args.prob_id)
-    model_config = {"random_state": prob_config.random_state}
+    model_config = {
+                    # "random_state": 123
+                    "n_estimators":500,
+                    "max_depth":12,
+                    "learning_rate":0.02,
+                    "subsample":0.8,
+                    "colsample_bytree": 0.4,
+                    "missing": -1,
+                    "eval_metric": 'auc',
+                    # USE CPU
+                    #nthread=4,
+                    #tree_method='hist'
+                    # USE GPU
+                    #"tree_method"='gpu_hist'
+                    }
+    
+    if os.path.exists(prob_config.captured_x_path):
+        args.add_captured_data = True
     ModelTrainer.train_model(
         prob_config, model_config, add_captured_data=args.add_captured_data
     )
