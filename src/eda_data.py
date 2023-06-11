@@ -10,10 +10,24 @@ import pickle
 import xgboost as xgb
 from problem_config import ProblemConfig, ProblemConst, get_prob_config, load_feature_configs_dict
 from utils import AppPath
-from sklearn.model_selection import train_test_split
-from raw_data_processor import RawDataProcessor
 from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
+
+
+def build_category_features(data, categorical_cols=None):
+        if categorical_cols is None:
+            categorical_cols = []
+        category_index = {}
+        if len(categorical_cols) == 0:
+            return data, category_index
+
+        df = data.copy()
+        # process category features
+        for col in categorical_cols:
+            df[col] = df[col].astype("category")
+            category_index[col] = df[col].cat.categories
+            df[col] = df[col].cat.codes
+        return df, category_index
 
 class DataAnalyzer:
     """
@@ -47,12 +61,13 @@ class DataAnalyzer:
 
 
 
+    
     def load_data(self):
         # Load data from path
         #save category_index.pickle file for predictor process  transform input
 
         training_data = pd.read_parquet(self.prob_config.raw_data_path)
-        self.data, category_index = RawDataProcessor.build_category_features(
+        self.data, category_index = build_category_features(
             training_data, self.prob_config.categorical_cols
         )
         self.org = training_data

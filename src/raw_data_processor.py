@@ -6,7 +6,7 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from utils import *
-from eda_data import *
+from eda_data import DataAnalyzer
 from problem_config import ProblemConfig, ProblemConst, get_prob_config
 
 
