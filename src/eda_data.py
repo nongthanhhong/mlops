@@ -29,18 +29,21 @@ class DataAnalyzer:
         target_col (str): The name of the column containing the target variable.
         """
 
-        self.prob_config = prob_config
-        self.data = None
-        self.target_col = None
-        self.org = None
+        
+        
         self.raw_path = AppPath.RAW_DATA_DIR / f"{prob_config.phase_id}" / f"{prob_config.prob_id}" 
-        self.eda_path = AppPath.EDA_DATA_DIR / f"{prob_config.phase_id}" / f"{prob_config.prob_id}" 
+        self.eda_path = AppPath.EDA_DATA_DIR / f"{prob_config.phase_id}" / f"{prob_config.prob_id}"
 
         feature_configs = load_feature_configs_dict(self.raw_path / "features_config.json")
         prob_config.target_col = feature_configs.get("target_column")
         prob_config.categorical_cols = feature_configs.get("category_columns")
         prob_config.numerical_cols = feature_configs.get("numeric_columns")
         prob_config.ml_type = feature_configs.get("ml_type")
+
+        self.prob_config = prob_config
+        self.data = None
+        self.target_col = None
+        self.org = None
 
 
 
@@ -377,8 +380,16 @@ class DataAnalyzer:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Good job!!!")
         else:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Harder bro!!!")
-    
-def main(prob_config, sample):
+
+def input_process(self):
+
+    self.preprocess_data()
+    self.handle_incorrect_format()
+    processed = self.handle_outliers()
+
+    return processed
+
+def main(prob_config):
 
     eda = DataAnalyzer(prob_config)
     
@@ -389,7 +400,7 @@ def main(prob_config, sample):
     
     eda.preprocess_data()
     eda.handle_incorrect_format()
-    # eda.handle_outliers()
+    eda.handle_outliers()
     # eda.feature_selection()
 
     # eda.export_data()

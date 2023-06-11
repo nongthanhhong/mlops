@@ -5,6 +5,7 @@ import mlflow
 import numpy as np
 import xgboost as xgb
 from utils import *
+import yaml
 from mlflow.models.signature import infer_signature
 from sklearn.metrics import roc_auc_score
 
@@ -85,24 +86,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     prob_config = get_prob_config(args.phase_id, args.prob_id)
-    model_config = {
-                    # "random_state": 123
-                    "n_estimators":500,
-                    "max_depth":12,
-                    "learning_rate":0.02,
-                    "subsample":0.8,
-                    "colsample_bytree": 0.4,
-                    "missing": -1,
-                    "eval_metric": 'auc',
-                    # USE CPU
-                    #nthread=4,
-                    #tree_method='hist'
-                    # USE GPU
-                    #"tree_method"='gpu_hist'
-                    }
+    with open(args.config_path, "r") as f:
+        model_params = yaml.safe_load(f)
     
     if os.path.exists(prob_config.captured_x_path):
         args.add_captured_data = True
     ModelTrainer.train_model(
-        prob_config, model_config, add_captured_data=args.add_captured_data
+        prob_config, model_params, add_captured_data=args.add_captured_data
     )
