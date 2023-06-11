@@ -51,7 +51,7 @@ class ModelTrainer:
 
 
         model = xgb.XGBClassifier(objective=objective, **model_params)
-        model.fit(train_x[:-10000], train_y[:-10000], eval_set=[(train_x[10000:], train_y[10000:])], verbose=100, early_stopping_rounds=50)
+        model.fit(train_x[:-10000], train_y[:-10000], eval_set=[(train_x[10000:], train_y[10000:])], verbose=100, early_stopping_rounds=100)
 
 
 
