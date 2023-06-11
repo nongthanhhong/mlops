@@ -68,7 +68,11 @@ class DataAnalyzer:
         self.data, category_index = build_category_features(
             training_data, self.prob_config.categorical_cols
         )
-        self.dtype = self.data.dtypes.to_frame('dtypes').reset_index()
+
+        dtype = self.data.dtypes.to_frame('dtypes').reset_index()
+        with open(self.prob_config.train_data_path/'types.json', 'w') as f:
+            json.dump(dtype.set_index('index')['dtypes'].astype(str).to_dict() , f)
+
         self.org = training_data
         if not os.path.exists(self.prob_config.train_data_path):
             # Create the new folder
@@ -278,13 +282,16 @@ class DataAnalyzer:
         Returns:
         pandas.DataFrame: The DataFrame with the outliers removed.
         """
-        data = self.data.drop([self.target_col], axis=1)
-        if method == 'z-score':
+        if self.target_col != None: 
+            data = self.data.drop([self.target_col], axis=1)
+        else:  data = self.data
 
+        if method == 'z-score':
 
             z_scores = stats.zscore(data.select_dtypes(include=np.number))
             good_data = data[(abs(z_scores) < threshold).all(axis=1)]
-            good_data = pd.concat([good_data, self.data[self.target_col]], axis=1)
+            if self.target_col != None:
+                good_data = pd.concat([good_data, self.data[self.target_col]], axis=1)
 
         elif method == 'iqr':
             q1 = self.data.quantile(0.25)
@@ -324,11 +331,13 @@ class DataAnalyzer:
         #     raise ValueError(f"Invalid format '{correct_format}'")
 
         # Drop rows with the wrong format in each column
+        with open(self.prob_config.train_data_path / 'types.json', 'r') as f:
+           self.dtype = json.load(f)
         if drop:
             for column in self.data.columns:
                 self.data[column] = pd.to_numeric(self.data[column], errors='coerce')
                 self.data.dropna(inplace=True)
-                self.data[column] = self.data[column].astype(self.dtype[self.dtype["index"] == column]["dtypes"].to_string(index=False))
+                self.data[column] = self.data[column].astype(self.dtype[column])
         else: 
 
             # doing ....
@@ -431,7 +440,8 @@ class DataAnalyzer:
 
         # eda.export_data()
 
-        self.validate_data()
+        # self.validate_data()
+
 
 
 

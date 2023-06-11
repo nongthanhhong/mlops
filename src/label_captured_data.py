@@ -24,11 +24,10 @@ def label_captured_data(prob_config: ProblemConfig, model_params):
 
     eda = DataAnalyzer(prob_config)
     eda.data, _ = RawDataProcessor.build_category_features(
-            captured_x, eda.prob_config.categorical_cols
+            captured_x, prob_config.categorical_cols
         )
-    captured_x = eda.input_process(captured_x)
-    
-    
+    captured_x = eda.input_process()
+
     np_captured_x = captured_x.to_numpy()
     n_captured = len(np_captured_x)
     n_samples = len(train_x) + n_captured
@@ -39,10 +38,17 @@ def label_captured_data(prob_config: ProblemConfig, model_params):
     
     model = MiniBatchKMeans()
     k_mean = int(n_samples / 100) * len(np.unique(train_y))
+    
     # Use the KElbowVisualizer to find the optimal k using elbow method
-    visualizer = KElbowVisualizer(model, k=(k_mean-500, k_mean+500))
-    visualizer.fit(train_y)
-    optimal_k = visualizer.elbow_value_ 
+    visualizer = KElbowVisualizer(model, k=(k_mean-1, k_mean + 1))
+    visualizer.fit(train_x)
+    visualizer.show()   
+    optimal_k = visualizer.elbow_value_
+    if optimal_k is None:
+        optimal_k = k_mean
+        print(optimal_k)
+    else: 
+        print(optimal_k)
 
     kmeans_model = MiniBatchKMeans(
         n_clusters=optimal_k, **model_params
