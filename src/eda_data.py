@@ -335,7 +335,6 @@ class DataAnalyzer:
            self.dtype = json.load(f)
         if drop:
             for column in self.data.columns:
-                if column == "is_drift": continue
                 self.data[column] = pd.to_numeric(self.data[column], errors='coerce')
                 self.data.dropna(inplace=True)
                 self.data[column] = self.data[column].astype(self.dtype[column])
@@ -413,10 +412,8 @@ class DataAnalyzer:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Harder bro!!!")
 
     def input_process(self):
-
+        self.data = self.data.drop(["batch_id", "is_drift"], axis=1)
         self.preprocess_data()
-        print(self.data.info())
-        return
         self.handle_incorrect_format()
         self.handle_outliers()
         processed = self.handle_incorrect_format()
