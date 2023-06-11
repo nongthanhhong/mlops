@@ -4,8 +4,8 @@ captured_data/**
 # model_config/**/*.yaml
 # !model_config/phase-1/prob-1/example.yaml
 
-raw_data/**
-!raw_data/.gitkeep
+# raw_data/**
+# !raw_data/.gitkeep
 
 train_data/**
 !train_data/.gitkeep
