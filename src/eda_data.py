@@ -406,7 +406,8 @@ class DataAnalyzer:
 
         self.preprocess_data()
         self.handle_incorrect_format()
-        processed = self.handle_outliers()
+        self.handle_outliers()
+        processed = self.handle_incorrect_format()
 
         return processed
 
@@ -420,9 +421,6 @@ class DataAnalyzer:
         
         self.preprocess_data()
         self.handle_incorrect_format()
-
-        
-
         self.handle_outliers()
         self.handle_incorrect_format()
 
