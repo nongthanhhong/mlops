@@ -26,10 +26,6 @@
     -   Process data
 
         ```bash
-        python src/eda_data.py --phase-id phase-1 --prob-id prob-1
-        ```
-
-        ```bash
         python src/raw_data_processor.py --phase-id phase-1 --prob-id prob-1
         ```
 
