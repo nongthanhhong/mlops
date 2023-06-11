@@ -51,7 +51,7 @@ class ModelTrainer:
 
         val = int(len(train_x)*0.2/100)
         model = xgb.XGBClassifier(objective=objective, **model_params)
-        model.fit(train_x[:val], train_y[:val], eval_set=[(train_x[val:], train_y[val:])], verbose=100, early_stopping_rounds=200)
+        model.fit(train_x[:val], train_y[:val], eval_set=[(train_x[val:], train_y[val:])], verbose=100, early_stopping_rounds=500)
 
 
 
