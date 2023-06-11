@@ -335,6 +335,7 @@ class DataAnalyzer:
            self.dtype = json.load(f)
         if drop:
             for column in self.data.columns:
+                if column == "is_drift": continue
                 self.data[column] = pd.to_numeric(self.data[column], errors='coerce')
                 self.data.dropna(inplace=True)
                 self.data[column] = self.data[column].astype(self.dtype[column])
