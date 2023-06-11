@@ -50,7 +50,7 @@
         python src/model_trainer.py --phase-id phase-1 --prob-id prob-1
         ```
 
-    -   Register model: Go to mlflow UI at <http://localhost:5000> and register a new model named **phase-1_prob-1_model-1**
+    -   Register model: Go to mlflow UI at <http://localhost:5000> and register a new model named **phase1-prob1-xgb**
 
 3.  Deploy model predictor
 
@@ -59,7 +59,7 @@
         ```yaml
         phase_id: "phase-1"
         prob_id: "prob-1"
-        model_name: "phase-1_prob-1_model-1"
+        model_name: "phase1-prob1-xgb"
         model_version: "1"
         ```
 
