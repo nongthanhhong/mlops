@@ -6,6 +6,7 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from utils import *
+from eda_data import *
 from problem_config import ProblemConfig, ProblemConst, get_prob_config
 
 
@@ -59,16 +60,18 @@ class RawDataProcessor:
         data eda have category columns didn't encode
 
         '''
-        if os.path.isfile(prob_config.preprocessed_data_path):
-            training_data = pd.read_parquet(prob_config.preprocessed_data_path)
+        if not os.path.exists(prob_config.preprocessed_data_path):
 
-        else:
-            training_data = pd.read_parquet(prob_config.raw_data_path)
-            training_data, category_index = RawDataProcessor.build_category_features(
-            training_data, prob_config.categorical_cols
-            )
-            with open(prob_config.category_index_path, "wb") as f:
-                pickle.dump(category_index, f)
+            training_data = DataAnalyzer(prob_config).main().data
+            
+            # training_data = pd.read_parquet(prob_config.raw_data_path)
+            # training_data, category_index = RawDataProcessor.build_category_features(
+            # training_data, prob_config.categorical_cols
+            # )
+            # with open(prob_config.category_index_path, "wb") as f:
+            #     pickle.dump(category_index, f)
+        else :
+            training_data = pd.read_parquet(prob_config.preprocessed_data_path)
         
         train, dev = train_test_split(
             training_data,

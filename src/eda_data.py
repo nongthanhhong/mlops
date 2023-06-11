@@ -381,30 +381,29 @@ class DataAnalyzer:
         else:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Harder bro!!!")
 
-def input_process(self):
+    def input_process(self):
 
-    self.preprocess_data()
-    self.handle_incorrect_format()
-    processed = self.handle_outliers()
+        self.preprocess_data()
+        self.handle_incorrect_format()
+        processed = self.handle_outliers()
 
-    return processed
+        return processed
 
-def main(prob_config):
+def main(self):
 
-    eda = DataAnalyzer(prob_config)
-    
-    eda.load_data()
+
+    self.load_data()
     # eda.summarize_data
     # eda.visualize_data
     # print(eda.data.describe())
     
-    eda.preprocess_data()
-    eda.handle_incorrect_format()
-    eda.handle_outliers()
+    self.preprocess_data()
+    self.handle_incorrect_format()
+    self.handle_outliers()
     # eda.feature_selection()
 
     # eda.export_data()
-    eda.validate_data()
+    self.validate_data()
 
 
 
@@ -417,4 +416,5 @@ if __name__ == "__main__":
     
     prob_config = get_prob_config(args.phase_id, args.prob_id)
 
-    main(prob_config)
+    eda = DataAnalyzer(prob_config)
+    eda.main()
