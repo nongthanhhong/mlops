@@ -80,6 +80,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
     parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB1)
+    parser.add_argument("--config-path", type=str, default="/mnt/e/mlops-marathon/mlops/src/model_config/xgboost.yaml")
     parser.add_argument(
         "--add-captured-data", type=lambda x: (str(x).lower() == "true"), default=False
     )
