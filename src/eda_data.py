@@ -415,6 +415,8 @@ class DataAnalyzer:
     def input_process(self):
 
         self.preprocess_data()
+        print(self.data.info())
+        return
         self.handle_incorrect_format()
         self.handle_outliers()
         processed = self.handle_incorrect_format()
