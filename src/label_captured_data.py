@@ -40,7 +40,7 @@ def label_captured_data(prob_config: ProblemConfig, model_params):
     k_mean = int(n_samples / 100) * len(np.unique(train_y))
     
     # Use the KElbowVisualizer to find the optimal k using elbow method
-    visualizer = KElbowVisualizer(model, k=(k_mean-333, k_mean + 333))
+    visualizer = KElbowVisualizer(model, k=(k_mean-5, k_mean + 5))
     visualizer.fit(train_x)
     visualizer.show()   
     optimal_k = visualizer.elbow_value_
