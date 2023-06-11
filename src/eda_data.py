@@ -56,7 +56,7 @@ class DataAnalyzer:
             training_data, self.prob_config.categorical_cols
         )
         self.org = training_data
-        if not os.path.exists(prob_config.train_data_path):
+        if not os.path.exists(self.prob_config.train_data_path):
             # Create the new folder
             os.mkdir(prob_config.train_data_path)
         with open(self.prob_config.category_index_path, "wb") as f:
