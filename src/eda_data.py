@@ -389,21 +389,20 @@ class DataAnalyzer:
 
         return processed
 
-def main(self):
+    def main(self):
+        
+        self.load_data()
+        # eda.summarize_data
+        # eda.visualize_data
+        # print(eda.data.describe())
+        
+        self.preprocess_data()
+        self.handle_incorrect_format()
+        self.handle_outliers()
+        # eda.feature_selection()
 
-
-    self.load_data()
-    # eda.summarize_data
-    # eda.visualize_data
-    # print(eda.data.describe())
-    
-    self.preprocess_data()
-    self.handle_incorrect_format()
-    self.handle_outliers()
-    # eda.feature_selection()
-
-    # eda.export_data()
-    self.validate_data()
+        # eda.export_data()
+        self.validate_data()
 
 
 
