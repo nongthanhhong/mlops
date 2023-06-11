@@ -1,8 +1,8 @@
-"random_state" : 123,
-"n_estimators" : 1000,
-"max_depth" : 12,
-"learning_rate" : 0.02,
-"subsample" : 0.8,
-"colsample_bytree" : 0.4,
-"missing" : -1,
-"eval_metric" : 'auc',
+random_state : 123
+n_estimators : 1000
+max_depth : 12
+learning_rate : 0.02
+subsample : 0.8
+colsample_bytree : 0.4
+missing : -1
+eval_metric : 'auc'
