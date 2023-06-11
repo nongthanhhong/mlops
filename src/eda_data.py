@@ -58,9 +58,7 @@ class DataAnalyzer:
         self.data = None
         self.target_col = None
         self.org = None
-
-
-
+        self.dtype = None
     
     def load_data(self):
         # Load data from path
@@ -70,6 +68,7 @@ class DataAnalyzer:
         self.data, category_index = build_category_features(
             training_data, self.prob_config.categorical_cols
         )
+        self.dtype = self.data.dtypes.to_frame('dtypes').reset_index()
         self.org = training_data
         if not os.path.exists(self.prob_config.train_data_path):
             # Create the new folder
@@ -281,9 +280,12 @@ class DataAnalyzer:
         """
         data = self.data.drop([self.target_col], axis=1)
         if method == 'z-score':
+
+
             z_scores = stats.zscore(data.select_dtypes(include=np.number))
             good_data = data[(abs(z_scores) < threshold).all(axis=1)]
-            good_data = pd.concat([z_scores, self.data[self.target_col]], axis=1)
+            good_data = pd.concat([good_data, self.data[self.target_col]], axis=1)
+
         elif method == 'iqr':
             q1 = self.data.quantile(0.25)
             q3 = self.data.quantile(0.75)
@@ -325,7 +327,8 @@ class DataAnalyzer:
         if drop:
             for column in self.data.columns:
                 self.data[column] = pd.to_numeric(self.data[column], errors='coerce')
-            self.data.dropna(inplace=True)
+                self.data.dropna(inplace=True)
+                self.data[column] = self.data[column].astype(self.dtype[self.dtype["index"] == column]["dtypes"].to_string(index=False))
         else: 
 
             # doing ....
@@ -378,9 +381,9 @@ class DataAnalyzer:
             X = self.data.drop(columns=[self.target_col])
             y = self.data[self.target_col]
         else:
-            data, _ = RawDataProcessor.build_category_features(
+            data, _ = build_category_features(
             self.org, self.prob_config.categorical_cols
-        )
+            )
             X = data.drop(columns=[self.target_col])
             y = data[self.target_col]
         # Set XGBoost parameters
@@ -410,16 +413,26 @@ class DataAnalyzer:
     def main(self):
 
         self.load_data()
+        # print(self.data.info())
+        
         # eda.summarize_data
         # eda.visualize_data
-        # print(eda.data.describe())
         
         self.preprocess_data()
         self.handle_incorrect_format()
+
+        
+
         self.handle_outliers()
+        self.handle_incorrect_format()
+
+        # print(self.data.info())
+        # print(self.data.head())
+
         # eda.feature_selection()
 
         # eda.export_data()
+
         self.validate_data()
 
 
@@ -427,7 +440,7 @@ class DataAnalyzer:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
-    parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB1)
+    parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB2)
     
     args = parser.parse_args()
     
@@ -435,3 +448,5 @@ if __name__ == "__main__":
 
     eda = DataAnalyzer(prob_config)
     eda.main()
+    # print(eda.data.info())
+    # print(eda.dtype[eda.dtype["index"] == 'feature1']["dtypes"].to_string(index=False))
