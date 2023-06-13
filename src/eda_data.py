@@ -242,10 +242,11 @@ class DataAnalyzer:
         # if categorical_cols is None:
         #     categorical_cols = self.data.select_dtypes(include='object').columns.tolist()
 
-        encoded_data = self.data
-
         # for col in categorical_cols:
         #     encoded_data[col], _ = pd.factorize(self.data[col])
+        
+        
+        encoded_data = self.data
         
         # Fill missing values
         if fill_value == 'mean':
@@ -257,6 +258,9 @@ class DataAnalyzer:
         else:
             raise ValueError(f"Invalid fill value '{fill_value}'")
         
+        # Remove duplicated rows
+        encoded_data = encoded_data.drop_duplicates()
+
         # Scale the data
         if scaler is not None:
             if scaler == 'standard':
@@ -416,7 +420,10 @@ class DataAnalyzer:
         self.preprocess_data()
         self.handle_incorrect_format()
         self.handle_outliers()
-        processed = self.handle_incorrect_format()
+        self.handle_incorrect_format()
+        processed = eda.feature_selection()
+        # self.export_data
+        
 
         return processed
 
@@ -436,9 +443,9 @@ class DataAnalyzer:
         # print(self.data.info())
         # print(self.data.head())
 
-        # eda.feature_selection()
+        eda.feature_selection()
 
-        # eda.export_data()
+        eda.export_data()
 
         # self.validate_data()
 

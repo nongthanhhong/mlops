@@ -13,7 +13,7 @@ from utils import *
 from pandas.util import hash_pandas_object
 from pydantic import BaseModel
 
-from problem_config import ProblemConst, create_prob_config
+from problem_config import ProblemConst, create_prob_config, load_feature_configs_dict
 from raw_data_processor import RawDataProcessor
 from utils import AppConfig, AppPath
 
@@ -47,6 +47,8 @@ class ModelPredictor:
         )
         self.model = mlflow.pyfunc.load_model(model_uri)
 
+        self.columns_to_keep = self.prob_config.categorical_cols + self.prob_config.numerical_cols
+
     def detect_drift(self, feature_df) -> int:
         # watch drift between coming requests and training data
         time.sleep(0.002)
@@ -63,9 +65,11 @@ class ModelPredictor:
             category_index=self.category_index,
         )
         # save request data for improving models
-        ModelPredictor.save_request_data(
-            feature_df, self.prob_config.captured_data_dir, data.id
-        )
+        # ModelPredictor.save_request_data(
+        #     feature_df, self.prob_config.captured_data_dir, data.id
+        # )
+
+        feature_df = feature_df.drop([col for col in feature_df.columns if col not in self.columns_to_keep], axis=1)
 
         prediction = self.model.predict(feature_df)
         is_drifted = self.detect_drift(feature_df)
