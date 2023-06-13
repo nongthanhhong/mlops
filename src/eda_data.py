@@ -69,9 +69,9 @@ class DataAnalyzer:
             training_data, self.prob_config.categorical_cols
         )
 
-        dtype = self.data.dtypes.to_frame('dtypes').reset_index()
+        dtype = self.data.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
         with open(self.prob_config.train_data_path/'types.json', 'w') as f:
-            json.dump(dtype.set_index('index')['dtypes'].astype(str).to_dict() , f)
+            json.dump(dtype, f)
 
         self.org = training_data
         if not os.path.exists(self.prob_config.train_data_path):
@@ -216,7 +216,7 @@ class DataAnalyzer:
         # Filter out features with low correlation
         good_features = corr_with_target[abs(corr_with_target) >= corr_threshold].index.tolist()
         
-        print(corr_threshold)
+        print(f'Correlation threshold: {corr_threshold}')
         # Return subset of original DataFrame containing only features with good correlation
         self.data = self.data[good_features]
         return self.data[good_features]
@@ -359,7 +359,7 @@ class DataAnalyzer:
 
         #write a .json about features input after eda
     
-        raw_config = json.load(open(prob_config.feature_config_path))
+        raw_config = json.load(open(self.prob_config.feature_config_path))
         config ={}
 
         config['numeric_columns'] = []
@@ -443,9 +443,9 @@ class DataAnalyzer:
         # print(self.data.info())
         # print(self.data.head())
 
-        eda.feature_selection()
+        self.feature_selection()
 
-        eda.export_data()
+        self.export_data()
 
         # self.validate_data()
 
