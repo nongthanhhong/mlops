@@ -197,6 +197,7 @@ class DataAnalyzer:
         
         # print(self.data.describe())
         # Compute correlation between each feature and the target variable
+
         corr_with_target = self.data.corr()[self.target_col].sort_values(ascending=False)
         
         print('Correlation Between Each Feature and the Target Variable:\n')
@@ -211,14 +212,17 @@ class DataAnalyzer:
             plt.show()
             
         if corr_threshold > np.mean(abs(corr_with_target)):
-            corr_threshold = np.mean(abs(corr_with_target))
+            corr_threshold = np.mean(abs(corr_with_target))/10
 
         # Filter out features with low correlation
         good_features = corr_with_target[abs(corr_with_target) >= corr_threshold].index.tolist()
         
-        print(f'Correlation threshold: {corr_threshold}')
+        
         # Return subset of original DataFrame containing only features with good correlation
         self.data = self.data[good_features]
+        print("The remaining columns: ", self.data.columns )
+        print(f'Correlation threshold: {corr_threshold}')
+        print(f'Size data after feature extration: {self.data.shape}')
         return self.data[good_features]
     
     def preprocess_data(self, fill_value='mean', scaler=None):
@@ -367,6 +371,7 @@ class DataAnalyzer:
         for column in self.data.columns:
             if column in raw_config['numeric_columns']:
                 config['numeric_columns'].append(column)
+                continue
             if column in raw_config['category_columns']:
                 config['category_columns'].append(column)
 
@@ -447,7 +452,7 @@ class DataAnalyzer:
 
         self.export_data()
 
-        # self.validate_data()
+        self.validate_data()
 
 
 

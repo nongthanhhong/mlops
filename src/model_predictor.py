@@ -65,11 +65,11 @@ class ModelPredictor:
             category_index=self.category_index,
         )
         # save request data for improving models
-        # ModelPredictor.save_request_data(
-        #     feature_df, self.prob_config.captured_data_dir, data.id
-        # )
+        ModelPredictor.save_request_data(
+            feature_df, self.prob_config.captured_data_dir, data.id
+        )
 
-        feature_df = feature_df.drop([col for col in feature_df.columns if col not in self.columns_to_keep], axis=1)
+        feature_df = feature_df[self.columns_to_keep]
 
         prediction = self.model.predict(feature_df)
         is_drifted = self.detect_drift(feature_df)

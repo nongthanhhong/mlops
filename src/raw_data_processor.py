@@ -78,6 +78,7 @@ class RawDataProcessor:
             training_data,
             test_size=prob_config.test_size,
             random_state=prob_config.random_state,
+            shuffle=False
         )
 
         target_col = prob_config.target_col

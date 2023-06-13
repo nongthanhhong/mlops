@@ -49,9 +49,10 @@ class ModelTrainer:
         else:
             objective = "multi:softprob"
 
-        val = int(len(train_x)*0.2/100)
+        val = 3*len(train_x)//4
+        print(f'Train data samples: {3*len(train_x)//4}, val data samples" {len(train_x)-3*len(train_x)//4}')
         model = xgb.XGBClassifier(objective=objective, **model_params)
-        model.fit(train_x[:-val], train_y[:-val], eval_set=[(train_x[val:], train_y[val:])], verbose=100, early_stopping_rounds=200)
+        model.fit(train_x[:val], train_y[:val], eval_set=[(train_x[val:], train_y[val:])], verbose=50, early_stopping_rounds=100)
 
 
 
@@ -90,8 +91,8 @@ if __name__ == "__main__":
     with open(args.config_path, "r") as f:
         model_params = yaml.safe_load(f)
     
-    if os.path.exists(prob_config.captured_x_path):
-        args.add_captured_data = True
+    # if os.path.exists(prob_config.captured_x_path):
+    #     args.add_captured_data = True
     ModelTrainer.train_model(
         prob_config, model_params, add_captured_data=args.add_captured_data
     )
