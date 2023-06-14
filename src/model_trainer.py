@@ -90,7 +90,7 @@ class ModelTrainer:
             train_y = np.concatenate((train_y, captured_y))
             logging.info(f"added {len(captured_x)} captured samples")
 
-        val = 3*len(train_x)//4
+        val = int(len(train_x)-len(train_x)*0.125)
 
         # counter = Counter(train_y)
         # # estimate scale_pos_weight value
@@ -98,7 +98,7 @@ class ModelTrainer:
         # return
 
         
-        print(f'Train data samples: {3*len(train_x)//4}, val data samples" {len(train_x)-3*len(train_x)//4}')
+        print(f'Train data samples: {val}, val data samples" {len(train_x)-val}')
 
 
         model = class_model.model

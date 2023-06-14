@@ -9,16 +9,15 @@
         "early_stopping_rounds": 100
     },
     "params": {
-        "n_estimators" : 5000,
-        "scale_pos_weight":17,
-        "max_depth" : 12,
-        "learning_rate" : 0.02,
-        "subsample" : 0.9,
+        "n_estimators" : 3000,
+        "scale_pos_weight":45,
+        "max_depth" : 8,
+        "learning_rate" : 0.03,
+        "subsample" : 0.4, 
         "colsample_bytree" : 0.5,
-        "colsample_bylevel" : 0.6,
-        "colsample_bynode" : 0.7,
-
-        "missing" : -1,
+        "colsample_bylevel" : 0.5,
+        "colsample_bynode" : 0.5,
+        "min_child_weight": 10,
         "objective": "binary:logistic"
     }
     

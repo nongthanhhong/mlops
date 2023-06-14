@@ -448,7 +448,7 @@ class DataAnalyzer:
         # print(self.data.info())
         # print(self.data.head())
 
-        self.feature_selection()
+        # self.feature_selection()
 
         self.export_data()
 

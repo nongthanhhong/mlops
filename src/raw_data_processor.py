@@ -77,7 +77,6 @@ class RawDataProcessor:
         train, dev = train_test_split(
             training_data,
             test_size=prob_config.test_size,
-            random_state=prob_config.random_state,
             shuffle=False
         )
 
