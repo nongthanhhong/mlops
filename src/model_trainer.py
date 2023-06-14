@@ -100,9 +100,11 @@ class ModelTrainer:
 
 
         model = class_model.model
+        
         print(class_weight.compute_class_weight(class_weight = 'balanced',
                                                                 classes = np.unique(train_y),
                                                                 y = train_y))
+        
         model.fit(train_x[:val], train_y[:val], eval_set=[(train_x[val:], train_y[val:])],
                   **class_model.train)
 

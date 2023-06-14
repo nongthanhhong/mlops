@@ -77,7 +77,8 @@ class RawDataProcessor:
         train, dev = train_test_split(
             training_data,
             test_size=prob_config.test_size,
-            shuffle=False
+            #shuffle=False,
+            stratify= training_data[prob_config.target_col]
         )
 
         target_col = prob_config.target_col
