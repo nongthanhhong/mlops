@@ -9,14 +9,12 @@
         "early_stopping_rounds": 100
     },
     "params": {
-        "n_estimators" : 2000,
-        "depth": 9,
-        "scale_pos_weight": 3,
+        "n_estimators" : 3000,
+        "depth": 8,
+        "scale_pos_weight": 97,
         "learning_rate" : 0.02,
-        "subsample" : 0.8,
+        "subsample" : 0.4,
         "l2_leaf_reg": 6,
-        "random_strength":20,
-        "auto_class_weights": "Balanced",
-        "eval_metric": "auc"
+        "random_strength":20
     }
 }

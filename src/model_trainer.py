@@ -67,7 +67,7 @@ class ModelTrainer:
     def train_model(prob_config: ProblemConfig, add_captured_data=False):
 
         class_model = Models(prob_config)
-        class_model.xgb_classifier()
+        class_model.catboost_classifier()
 
         logging.info("start train_model")
         # init mlflow
@@ -92,11 +92,9 @@ class ModelTrainer:
 
         val = int(len(train_x)-len(train_x)*0.125)
 
-        # counter = Counter(train_y)
-        # # estimate scale_pos_weight value
-        # print(counter[1] / counter[0])
-        # return
-
+        counter = Counter(train_y)
+        # estimate scale_pos_weight value
+        print(f'num 1: {counter[1]} - {100*counter[1]/len(train_y)}%, num 0 {counter[0]} - {100*counter[0]/len(train_y)}%')
         
         print(f'Train data samples: {val}, val data samples" {len(train_x)-val}')
 
@@ -113,6 +111,10 @@ class ModelTrainer:
         # evaluate
         test_x, test_y = RawDataProcessor.load_test_data(prob_config)
         predictions = model.predict(test_x)
+        counter = Counter(test_y)
+        # estimate scale_pos_weight value
+        print(f'num 1: {counter[1]} - {100*counter[1]/len(test_y)}%, num 0 {counter[0]} - {100*counter[0]/len(test_y)}%')
+        
         auc_score = roc_auc_score(test_y, predictions)
         metrics = {"test_auc": auc_score}
         logging.info(f"metrics: {metrics}")
