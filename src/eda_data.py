@@ -452,21 +452,21 @@ class DataAnalyzer:
 
         self.export_data()
 
-        self.validate_data()
-
-
+        # self.validate_data()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
-    parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB2)
+    parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB1)
     
     args = parser.parse_args()
     
     prob_config = get_prob_config(args.phase_id, args.prob_id)
 
     eda = DataAnalyzer(prob_config)
-    eda.main()
+    # eda.main()
+    eda.load_data()
+    eda.visualize_data()
     # print(eda.data.info())
     # print(eda.dtype[eda.dtype["index"] == 'feature1']["dtypes"].to_string(index=False))
