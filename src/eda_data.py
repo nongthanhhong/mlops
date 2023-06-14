@@ -458,7 +458,7 @@ class DataAnalyzer:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Harder bro!!!")
 
 
-    def balance_dataset(self, majority_label=0, minority_label=1, subset_percentage=0.5):
+    def balance_dataset(self, majority_label=0, minority_label=1, subset_percentage=0.7):
         """
         Balance an imbalanced dataset by clustering and selecting a representative subset of instances from the majority class.
 
@@ -489,14 +489,14 @@ class DataAnalyzer:
         data = self.data.copy()
         target_col = self.prob_config.target_col
 
-        train_y = data[target_col]
         # Separate majority and minority classes
         majority_class = data[data[target_col] == majority_label]
         minority_class = data[data[target_col] == minority_label]
 
         # Perform clustering on the majority class instances
 
-        k_mean = int( len(train_y) / 1000) * len(np.unique(train_y))
+        k_mean = int( len(majority_class[target_col]) / 100) * len(np.unique(majority_class[target_col]))
+        print(f'n_clusters = {k_mean}')
         kmeans = MiniBatchKMeans(
             n_clusters=k_mean, **model_params
             )
