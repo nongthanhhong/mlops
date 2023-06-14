@@ -41,6 +41,8 @@ def remove_files_in_folder(folder_path):
         The path to the folder containing the files to be removed.
     """
     for file_name in os.listdir(folder_path):
+        if file_name == "category_index.pickle":
+            continue
         file_path = os.path.join(folder_path, file_name)
         try:
             if os.path.isfile(file_path):
@@ -90,6 +92,7 @@ class DataAnalyzer:
         )
 
         dtype = self.data.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
+        
         with open(self.prob_config.train_data_path/'types.json', 'w') as f:
             json.dump(dtype, f)
 
@@ -97,6 +100,7 @@ class DataAnalyzer:
         if not os.path.exists(self.prob_config.train_data_path):
             # Create the new folder
             os.mkdir(prob_config.train_data_path)
+
         with open(self.prob_config.category_index_path, "wb") as f:
             pickle.dump(category_index, f)
 

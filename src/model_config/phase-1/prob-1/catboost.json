@@ -6,7 +6,7 @@
     "train": {
         "use_best_model": true, 
         "verbose": 50, 
-        "early_stopping_rounds": 200
+        "early_stopping_rounds": 100
     },
     "params": {
         "n_estimators" : 5000,
@@ -14,6 +14,7 @@
         "auto_class_weights": "Balanced",
         "learning_rate" : 0.03,
         "subsample" : 0.4,
-        "l2_leaf_reg": 9
+        "l2_leaf_reg": 9,
+        "eval_metric": "AUC"
     }
 }
