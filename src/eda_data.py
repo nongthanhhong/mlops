@@ -516,7 +516,7 @@ class DataAnalyzer:
         # Combine the trimmed down population with the minority class instances
         balanced_data = pd.concat([selected_instances, minority_class])
         self.data = balanced_data.drop("cluster", axis=1)
-        print( self.data.info())
+        
         return balanced_data
 
     def input_process(self):
@@ -527,6 +527,7 @@ class DataAnalyzer:
         self.handle_incorrect_format()
         processed = eda.feature_selection()
         # balanced_data = balance_dataset(data, 'target')
+        print( self.data.info())
         # self.export_data
         
 
@@ -550,7 +551,7 @@ class DataAnalyzer:
 
         # self.feature_selection()
         self.balance_dataset()
-
+        print( self.data.info())
         self.export_data()
 
         # self.validate_data()
