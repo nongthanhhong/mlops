@@ -68,13 +68,13 @@ def create_prob_config(phase_id: str, prob_id: str) -> ProblemConfig:
 
     # chose features_config file
     # if not eda config then use raw config
-    if not os.path.exists((AppPath.EDA_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json")):
+    if os.path.isfile((AppPath.EDA_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json")):
         prob_config.feature_config_path = (
-        AppPath.RAW_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json"
+            AppPath.EDA_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json"
         )
     else:
         prob_config.feature_config_path = (
-            AppPath.EDA_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json"
+            AppPath.RAW_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json"
         )
 
     # data path train
