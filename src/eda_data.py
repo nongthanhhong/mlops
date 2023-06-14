@@ -1,17 +1,19 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import json
-import argparse
-from scipy import stats
 import os
+import json
+import yaml
 import pickle
+import argparse
+import numpy as np
+import pandas as pd
 import xgboost as xgb
-from problem_config import ProblemConfig, ProblemConst, get_prob_config, load_feature_configs_dict
+import seaborn as sns
+from scipy import stats
 from utils import AppPath
-from sklearn.ensemble import RandomForestClassifier
-import xgboost as xgb
+import matplotlib.pyplot as plt
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.utils import resample
+from problem_config import ProblemConfig, ProblemConst, get_prob_config, load_feature_configs_dict
+
 
 
 def build_category_features(data, categorical_cols=None):
@@ -28,6 +30,24 @@ def build_category_features(data, categorical_cols=None):
             category_index[col] = df[col].cat.categories
             df[col] = df[col].cat.codes
         return df, category_index
+
+def remove_files_in_folder(folder_path):
+    """
+    Remove all files in a folder.
+
+    Parameters:
+    -----------
+    folder_path : str
+        The path to the folder containing the files to be removed.
+    """
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting {file_path}: {e}")
+            pass
 
 class DataAnalyzer:
     """
@@ -356,7 +376,19 @@ class DataAnalyzer:
         return self.data
     
     def export_data(self):
+        
+        # Delete to ensure save only new data
+
+        if os.path.exists(self.eda_path / "preprocessed_train.parquet"):
+            os.remove(self.eda_path / "preprocessed_train.parquet")
+        if os.path.exists(self.eda_path / "features_config.json"):
+            os.remove(self.eda_path / "features_config.json")
+        
+        remove_files_in_folder(self.prob_config.train_data_path)
+        
+
         # Export preprocessed data
+
         os.makedirs(self.eda_path, exist_ok=True)
 
         self.data.to_parquet(self.eda_path / "preprocessed_train.parquet", index=False)
@@ -420,6 +452,67 @@ class DataAnalyzer:
         else:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Harder bro!!!")
 
+
+    def balance_dataset(self, majority_label=0, minority_label=1, subset_percentage=0.5):
+        """
+        Balance an imbalanced dataset by clustering and selecting a representative subset of instances from the majority class.
+
+        Parameters:
+        -----------
+        data : pandas.DataFrame
+            The original dataset.
+        target_col : str
+            The name of the column containing the target variable.
+        majority_label : int, optional (default=0)
+            The label of the majority class.
+        minority_label : int, optional (default=1)
+            The label of the minority class.
+        n_clusters : int, optional (default=3)
+            The number of clusters to use when performing k-means clustering.
+        subset_percentage : float, optional (default=0.5)
+            The percentage of instances to select from each cluster.
+
+        Returns:
+        --------
+        pandas.DataFrame
+            The balanced dataset.
+        """
+        config_path = "./src/model_config/minibatchkmeans.yaml"
+        with open(config_path, "r") as f:
+            model_params = yaml.safe_load(f)
+
+        data = self.data.copy()
+        target_col = self.prob_config.target_col
+
+        train_y = data[target_col]
+        # Separate majority and minority classes
+        majority_class = data[data[target_col] == majority_label]
+        minority_class = data[data[target_col] == minority_label]
+
+        # Perform clustering on the majority class instances
+
+        k_mean = int( len(train_y) / 1000) * len(np.unique(train_y))
+        kmeans = MiniBatchKMeans(
+            n_clusters=k_mean, **model_params
+            )
+        kmeans.fit(majority_class.drop(target_col, axis=1))
+
+
+        # Select a representative subset from each cluster
+        cluster_labels = kmeans.predict(majority_class.drop(target_col, axis=1))
+        majority_class_clustered = pd.concat([majority_class.reset_index(drop=True), pd.Series(cluster_labels, name='cluster')], axis=1)
+
+        selected_instances = pd.DataFrame()
+        for cluster in np.unique(cluster_labels):
+            cluster_instances = majority_class_clustered[majority_class_clustered['cluster'] == cluster]
+            n_instances = int(len(cluster_instances) * subset_percentage)
+            selected_instances = pd.concat([selected_instances, resample(cluster_instances, n_samples=n_instances)])
+
+        # Combine the trimmed down population with the minority class instances
+        balanced_data = pd.concat([selected_instances, minority_class])
+        self.data = balanced_data
+        return balanced_data
+
     def input_process(self):
         self.data = self.data.drop(["batch_id", "is_drift"], axis=1)
         self.preprocess_data()
@@ -427,6 +520,7 @@ class DataAnalyzer:
         self.handle_outliers()
         self.handle_incorrect_format()
         processed = eda.feature_selection()
+        # balanced_data = balance_dataset(data, 'target')
         # self.export_data
         
 
@@ -449,6 +543,7 @@ class DataAnalyzer:
         # print(self.data.head())
 
         # self.feature_selection()
+        self.balance_dataset()
 
         self.export_data()
 

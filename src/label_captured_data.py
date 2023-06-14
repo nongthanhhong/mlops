@@ -37,7 +37,7 @@ def label_captured_data(prob_config: ProblemConfig, model_params):
     logging.info("Initialize and fit the clustering model")
     
     model = MiniBatchKMeans()
-    k_mean = int(n_samples / 100) * len(np.unique(train_y))
+    k_mean = int( len(train_y) / 100) * len(np.unique(train_y))
     
     # Use the KElbowVisualizer to find the optimal k using elbow method
     visualizer = KElbowVisualizer(model, k=(k_mean-5, k_mean + 5))

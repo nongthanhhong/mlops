@@ -6,7 +6,7 @@
     "train": {
         "use_best_model": true, 
         "verbose": 50, 
-        "early_stopping_rounds": 100
+        "early_stopping_rounds": 200
     },
     "params": {
         "n_estimators" : 5000,

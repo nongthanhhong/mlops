@@ -10,7 +10,8 @@ from utils import *
 import json
 import yaml
 from mlflow.models.signature import infer_signature
-from sklearn.metrics import roc_auc_score, classification_report, confusion_matrix
+from sklearn.metrics import roc_auc_score, classification_report, confusion_matrix, roc_curve
+import matplotlib.pyplot as plt
 from sklearn.utils import class_weight
 
 from problem_config import (
@@ -100,7 +101,7 @@ class ModelTrainer:
 
 
         model = class_model.model
-        
+
         print(class_weight.compute_class_weight(class_weight = 'balanced',
                                                                 classes = np.unique(train_y),
                                                                 y = train_y))
@@ -112,12 +113,15 @@ class ModelTrainer:
 
         # evaluate
         test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+
         predictions = model.predict(test_x)
+
         counter = Counter(test_y)
         # estimate scale_pos_weight value
         print(f'num 1: {counter[1]} - {100*counter[1]/len(test_y)}%, num 0 {counter[0]} - {100*counter[0]/len(test_y)}%')
         
         auc_score = roc_auc_score(test_y, predictions)
+
         metrics = {"test_auc": auc_score}
         logging.info(f"metrics: {metrics}")
         logging.info("\n" + classification_report(test_y, predictions))
@@ -133,6 +137,15 @@ class ModelTrainer:
             signature=signature,
         )
         mlflow.end_run()
+
+        # Plot the ROC curve
+        fpr, tpr, _ = roc_curve(test_y, predictions)
+        plt.plot(fpr, tpr, label='ROC curve (AUC = %0.2f)' % auc_score)
+        plt.plot([0, 1], [0, 1], 'k--')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.legend(loc='lower right')
+        plt.show()
         logging.info("finish train_model")
 
 
