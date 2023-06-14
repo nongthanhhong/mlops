@@ -385,8 +385,7 @@ class DataAnalyzer:
 
         if os.path.exists(self.eda_path / "preprocessed_train.parquet"):
             os.remove(self.eda_path / "preprocessed_train.parquet")
-        if os.path.exists(self.eda_path / "features_config.json"):
-            os.remove(self.eda_path / "features_config.json")
+        
         
         remove_files_in_folder(self.prob_config.train_data_path)
         
@@ -416,6 +415,8 @@ class DataAnalyzer:
 
 
         with open(self.eda_path / "features_config.json", 'w+') as f:
+            if os.path.exists(self.eda_path / "features_config.json"):
+                os.remove(self.eda_path / "features_config.json")
             json.dump(config, f, indent=4)
 
     def validate_data(self, use_eda = True):
@@ -514,7 +515,8 @@ class DataAnalyzer:
 
         # Combine the trimmed down population with the minority class instances
         balanced_data = pd.concat([selected_instances, minority_class])
-        self.data = balanced_data
+        self.data = balanced_data.drop("cluster", axis=1)
+        print( self.data.info())
         return balanced_data
 
     def input_process(self):
