@@ -22,6 +22,7 @@ class ProblemConfig:
     raw_data_path: str
     preprocessed_data_path: str
     feature_config_path: str
+    raw_feature_config_path: str
     category_index_path: str
     train_data_path: str
     train_x_path: str
@@ -68,6 +69,9 @@ def create_prob_config(phase_id: str, prob_id: str) -> ProblemConfig:
 
     # chose features_config file
     # if not eda config then use raw config
+    prob_config.raw_feature_config_path = (
+            AppPath.RAW_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json")
+
     if os.path.isfile((AppPath.EDA_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json")):
         prob_config.feature_config_path = (
             AppPath.EDA_DATA_DIR / f"{phase_id}" / f"{prob_id}" / "features_config.json"

@@ -2,19 +2,70 @@ import os
 import json
 import yaml
 import pickle
+import random
 import argparse
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 import seaborn as sns
+import networkx as nx
 from scipy import stats
 from utils import AppPath
+
+from gensim.models import Word2Vec, KeyedVectors
+from node2vec import Node2Vec
+from node2vec.edges import HadamardEmbedder
+from karateclub import Graph2Vec
+
 import matplotlib.pyplot as plt
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import resample
 from problem_config import ProblemConfig, ProblemConst, get_prob_config, load_feature_configs_dict
 
 
+class FraudEmbedding:
+    def __init__(self, prob_config: ProblemConfig):
+
+        transactions = pd.read_parquet(prob_config.captured_x_path)
+        self.transactions = transactions
+        self.graph = nx.DiGraph()
+        
+        # Create nodes for each account
+        accounts = set()
+        for index, transaction in self.transactions.iterrows():
+            accounts.add(transaction['feature4'])
+            accounts.add(transaction['feature7'])
+
+
+        self.graph.add_nodes_from(accounts)
+        
+        # Create edges for each transaction
+        for index, transaction in self.transactions.iterrows():
+            self.graph.add_edge(transaction['feature4'], transaction['feature7'], amount=transaction['feature3'])
+        
+         # Create node embeddings
+        node2vec = Node2Vec(self.graph, dimensions=64, walk_length=30, num_walks=200, workers=4)
+        self.model = node2vec.fit(window=10, min_count=1)
+        self.model.wv.save('./src/model_config/phase-1/prob-1/node_embeddings.bin')
+
+    def get_embeddings(self):
+        # Get embeddings for each account
+        embeddings = {}
+        for account in self.graph.nodes:
+            embeddings[account] = self.model.wv[account]
+        
+        return embeddings
+    
+    def get_feature(self, from_account, to_account, amount):
+        # Get node embeddings for from and to accounts
+        
+        from_embedding = self.model.wv.get_vector(from_account)
+        to_embedding = self.model.wv.get_vector(to_account)
+        
+        # Calculate feature vector as concatenation of embeddings and transaction amount
+        feature_vector = np.concatenate([from_embedding, to_embedding, [amount]])
+        
+        return feature_vector
 
 def build_category_features(data, categorical_cols=None):
         if categorical_cols is None:
@@ -314,16 +365,19 @@ class DataAnalyzer:
         Returns:
         pandas.DataFrame: The DataFrame with the outliers removed.
         """
+        print(len(self.data))
+
         if self.target_col != None: 
-            data = self.data.drop([self.target_col], axis=1)
-        else:  data = self.data
+            data = self.data.drop([self.target_col], axis=1).copy()
+        else:  data = self.data.copy()
 
         if method == 'z-score':
 
             z_scores = stats.zscore(data.select_dtypes(include=np.number))
             good_data = data[(abs(z_scores) < threshold).all(axis=1)]
             if self.target_col != None:
-                good_data = pd.concat([good_data, self.data[self.target_col]], axis=1)
+                
+                good_data = good_data.assign(label = self.data[self.target_col])
 
         elif method == 'iqr':
             q1 = self.data.quantile(0.25)
@@ -334,8 +388,10 @@ class DataAnalyzer:
             good_data = self.data[~((self.data < lower_bound) | (self.data > upper_bound)).any(axis=1)]
         else:
             raise ValueError('Invalid method specified. Options are "z-score" and "iqr".')
-
+        
+        print(f"After handle outliers, data preserved is {len(z_scores)*100/len(self.data)}%")
         self.data = good_data
+        print(len(self.data))
         return good_data
 
     def handle_incorrect_format(self, drop = True):
@@ -363,6 +419,7 @@ class DataAnalyzer:
         #     raise ValueError(f"Invalid format '{correct_format}'")
 
         # Drop rows with the wrong format in each column
+
         with open(self.prob_config.train_data_path / 'types.json', 'r') as f:
            self.dtype = json.load(f)
         if drop:
@@ -457,7 +514,6 @@ class DataAnalyzer:
         else:
             print(f"Score: {cv_results['test-auc-mean'].max()} --- Harder bro!!!")
 
-
     def balance_dataset(self, majority_label=0, minority_label=1, subset_percentage=0.7):
         """
         Balance an imbalanced dataset by clustering and selecting a representative subset of instances from the majority class.
@@ -516,8 +572,41 @@ class DataAnalyzer:
         # Combine the trimmed down population with the minority class instances
         balanced_data = pd.concat([selected_instances, minority_class])
         self.data = balanced_data.drop("cluster", axis=1)
+        print(len(np.unique( balanced_data["cluster"])))
+        # self.data = balanced_data
         
         return balanced_data
+
+    def add_embedding_feature(self):
+
+        
+        from_acc = self.data['feature4'].astype(float).tolist()
+        to_acc = self.data['feature7'].astype(float).tolist()
+        amount = self.data['feature3'].tolist()
+
+        # print(type(from_acc[0]))
+        # Load the embeddings from the file
+        if os.path.isfile('./src/model_config/phase-1/prob-1/node_embeddings.bin'):
+            embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
+        else: 
+            FraudEmbedding(self.prob_config)
+            embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
+
+        # feature_embedding = embedding_model.get_feature(from_acc[0], to_acc[0], amount[0])
+        # Get node embeddings for from and to accounts
+        
+        # print(embedding_model.get_vector((str(to_acc[0]))).shape , embedding_model.get_vector((str(from_acc[0]))).shape)
+        
+        feature_vector = []
+        for i in range(len(from_acc)):
+            from_embedding = embedding_model.get_vector(str(from_acc[i]))
+            to_embedding = embedding_model.get_vector((str(to_acc[i])))
+            # Calculate feature vector as concatenation of embeddings and transaction amount
+            feature_vector.append(np.concatenate([from_embedding, to_embedding, [amount[i]]]))
+
+        self.data = self.data.copy().assign(node_embedding = feature_vector)
+        
+        return self.data 
 
     def input_process(self):
         self.data = self.data.drop(["batch_id", "is_drift"], axis=1)
@@ -544,14 +633,17 @@ class DataAnalyzer:
         self.preprocess_data()
         self.handle_incorrect_format()
         self.handle_outliers()
-        self.handle_incorrect_format()
-
-        # print(self.data.info())
-        # print(self.data.head())
 
         # self.feature_selection()
-        self.balance_dataset()
+        # self.balance_dataset()
+
+        # print( self.data.info())
+        if self.prob_config.prob_id == "prob-1":
+            self.add_embedding_feature()
+
         print( self.data.info())
+        
+        
         self.export_data()
 
         # self.validate_data()

@@ -5,6 +5,7 @@ import mlflow
 import numpy as np
 import xgboost as xgb
 import catboost 
+import catboost as cb
 from collections import Counter
 from utils import *
 import json
@@ -77,11 +78,27 @@ class ModelTrainer:
             f"{prob_config.phase_id}_{prob_config.prob_id}_{class_model.EXPERIMENT_NAME}"
         )
 
-        # load train data
-        train_x, train_y = RawDataProcessor.load_train_data(prob_config)
-        train_x = train_x.to_numpy()
-        train_y = train_y.to_numpy()
-        logging.info(f"loaded {len(train_x)} samples")
+        if prob_config.prob_id == 'prob-1':
+            # load train data
+            train_x, train_y = RawDataProcessor.load_train_data(prob_config)
+            x_vec = np.array(train_x["node_embedding"].tolist())
+            x_other = train_x.drop(columns=["node_embedding"])
+            train_x = np.concatenate((x_other, x_vec), axis=1)
+            train_y = train_y.to_numpy()
+
+            test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+            x_vec = np.array(test_x["node_embedding"].tolist())
+            x_other = test_x.drop(columns=["node_embedding"])
+            test_x = np.concatenate((x_other, x_vec), axis=1)
+        else:
+            # load train data
+            train_x, train_y = RawDataProcessor.load_train_data(prob_config)
+            train_x = train_x.to_numpy()
+            train_y = train_y.to_numpy()
+
+            test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+
+        logging.info(f"Loaded {len(train_x)} train samples")
 
         if add_captured_data:
             captured_x, captured_y = RawDataProcessor.load_capture_data(prob_config)
@@ -97,24 +114,29 @@ class ModelTrainer:
         # estimate scale_pos_weight value
         print(f'num 1: {counter[1]} - {100*counter[1]/len(train_y)}%, num 0 {counter[0]} - {100*counter[0]/len(train_y)}%')
         
-        print(f'Train data samples: {val}, val data samples" {len(train_x)-val}')
 
+        print(f' {val} Train data samples, {len(train_x)-val} val data samples , and {len(test_x)} val samples!')
+
+
+        # print(class_weight.compute_class_weight(class_weight = 'balanced',
+        #                                                                 classes = np.unique(train_y),
+        #                                                                 y = train_y))
+        
+
+        dtrain = cb.Pool(train_x[:val], label=train_y[:val])
+        dval =  cb.Pool(train_x[val:], label=train_y[val:])
+        dtest =  cb.Pool(test_x, label=test_y)
 
         model = class_model.model
 
-        print(class_weight.compute_class_weight(class_weight = 'balanced',
-                                                                classes = np.unique(train_y),
-                                                                y = train_y))
-        
-        model.fit(train_x[:val], train_y[:val], eval_set=[(train_x[val:], train_y[val:])],
+        model.fit(dtrain, 
+                  eval_set=dval,
                   **class_model.train)
 
 
 
         # evaluate
-        test_x, test_y = RawDataProcessor.load_test_data(prob_config)
-
-        predictions = model.predict(test_x)
+        predictions = model.predict(dtest)
 
         counter = Counter(test_y)
         # estimate scale_pos_weight value

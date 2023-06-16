@@ -85,6 +85,29 @@ def label_captured_data(prob_config: ProblemConfig, model_params):
     approx_label_df.to_parquet(prob_config.uncertain_y_path, index=False)
 
 
+def merge_raw_captured(prob_config: ProblemConfig):
+
+    logging.info("Load captured data")
+    captured_x = pd.DataFrame()
+    for file_path in prob_config.captured_data_dir.glob("*.parquet"):
+        captured_data = pd.read_parquet(file_path)
+        captured_x = pd.concat([captured_x, captured_data])
+    
+    captured_x = captured_x[["feature4", "feature7", "feature3"]]
+
+    # np_captured_x = captured_x.to_numpy()
+    train_x = pd.read_parquet(prob_config.raw_data_path)[["feature4", "feature7", "feature3"]]
+
+    dtype = train_x.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
+
+    train_x = pd.DataFrame(np.concatenate((train_x, captured_x)), columns=["feature4", "feature7", "feature3"])
+    
+    for column in train_x.columns:
+        train_x[column] = train_x[column].astype(dtype[column])
+    
+    train_x.to_parquet(prob_config.captured_x_path, index=False)
+    logging.info(f"Saved {len(train_x)} samples to {prob_config.captured_x_path}")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
@@ -97,4 +120,5 @@ if __name__ == "__main__":
         model_params = yaml.safe_load(f)
 
     prob_config = get_prob_config(args.phase_id, args.prob_id)
-    label_captured_data(prob_config, model_params)
+    # label_captured_data(prob_config, model_params)
+    merge_raw_captured(prob_config)

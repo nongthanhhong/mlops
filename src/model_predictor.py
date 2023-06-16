@@ -12,6 +12,9 @@ from fastapi import FastAPI, Request
 from utils import *
 from pandas.util import hash_pandas_object
 from pydantic import BaseModel
+import numpy as np
+from gensim.models import KeyedVectors
+import catboost as cb
 
 from problem_config import ProblemConst, create_prob_config, load_feature_configs_dict
 from raw_data_processor import RawDataProcessor
@@ -24,6 +27,35 @@ class Data(BaseModel):
     id: str
     rows: list
     columns: list
+
+
+def input_process(feature_df, embedding_model):
+
+    from_acc = feature_df['feature4'].astype(float).tolist()
+    to_acc = feature_df['feature7'].astype(float).tolist()
+    amount = feature_df['feature3'].tolist()
+    feature_vector = []
+    for i in range(len(from_acc)):
+        if str(from_acc[i]) in embedding_model:
+            from_embedding = embedding_model.get_vector(str(from_acc[i]))
+        else: 
+            from_embedding = embedding_model.most_similar(str(from_acc[i]))
+
+        if str(to_acc[i]) in embedding_model:
+            to_embedding = embedding_model.get_vector(str(to_acc[i]))
+        else: 
+            to_embedding = embedding_model.most_similar(str(to_acc[i]))
+
+        # Calculate feature vector as concatenation of embeddings and transaction amount
+        feature_vector.append(np.concatenate([from_embedding, to_embedding, [amount[i]]]))
+
+    feature_df = feature_df.copy().assign(node_embedding = feature_vector)
+
+    x_vec = np.array(feature_df["node_embedding"].tolist())
+    x_other = feature_df.drop(columns=["node_embedding"])
+    feature_df = np.concatenate((x_other, x_vec), axis=1)
+
+    return feature_df 
 
 
 class ModelPredictor:
@@ -49,9 +81,11 @@ class ModelPredictor:
 
         self.columns_to_keep = self.prob_config.categorical_cols + self.prob_config.numerical_cols
 
+        #using embedding model
+        self.embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
+
     def detect_drift(self, feature_df) -> int:
         # watch drift between coming requests and training data
-        
         return random.choice([0, 1])
 
     def predict(self, data: Data):
@@ -64,12 +98,18 @@ class ModelPredictor:
             categorical_cols=self.prob_config.categorical_cols,
             category_index=self.category_index,
         )
+
         # save request data for improving models
         ModelPredictor.save_request_data(
             feature_df, self.prob_config.captured_data_dir, data.id
         )
 
-        feature_df = feature_df[self.columns_to_keep]
+        if self.prob_config.prob_id == 'prob-1':
+            feature_df = input_process(feature_df, self.embedding_model)
+
+        dtest =  cb.Pool(feature_df, label=None)
+
+        # feature_df = feature_df[self.columns_to_keep]
 
         prediction = self.model.predict(feature_df)
         is_drifted = self.detect_drift(feature_df)
