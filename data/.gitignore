@@ -1,5 +1,6 @@
 captured_data/**
 !captured_data/.gitkeep
+!captured_data/phase-1.zip
 
 # model_config/**/*.yaml
 # !model_config/phase-1/prob-1/example.yaml
@@ -11,4 +12,4 @@ train_data/**
 !train_data/.gitkeep
 
 preprocessed_data/**
-!preprocessed_data/.gitkeep
+# !preprocessed_data/.gitkeep

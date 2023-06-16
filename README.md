@@ -102,7 +102,7 @@
     -   Label the captured data, taking around 3 minutes
 
         ```bash
-        python src/label_captured_data.py --phase-id phase-1 --prob-id prob-1
+        python src/process_captured_data.py --phase-id phase-1 --prob-id prob-1
         ```
 
     -   After label the captured data, `./data/captured_data` dir should look like:
