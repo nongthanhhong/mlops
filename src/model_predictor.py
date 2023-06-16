@@ -51,7 +51,7 @@ class ModelPredictor:
 
     def detect_drift(self, feature_df) -> int:
         # watch drift between coming requests and training data
-        time.sleep(0.002)
+        
         return random.choice([0, 1])
 
     def predict(self, data: Data):
