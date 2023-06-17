@@ -54,7 +54,7 @@ def input_process(feature_df, embedding_model):
     x_vec = np.array(feature_df["node_embedding"].tolist())
     x_other = feature_df.drop(columns=["node_embedding"])
     feature_df = pd.DataFrame(np.concatenate((x_other, x_vec), axis=1))
-    logging.info(feature_df)
+    # logging.info(feature_df)
 
     return feature_df 
 
