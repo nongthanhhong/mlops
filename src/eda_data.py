@@ -389,9 +389,9 @@ class DataAnalyzer:
         else:
             raise ValueError('Invalid method specified. Options are "z-score" and "iqr".')
         
-        print(f"After handle outliers, data preserved is {len(z_scores)*100/len(self.data)}%")
+        # print(f"After handle outliers, data preserved is {len(z_scores)*100/len(self.data)}%")
         self.data = good_data
-        print(len(self.data))
+        # print(len(self.data))
         return good_data
 
     def handle_incorrect_format(self, drop = True):
@@ -638,8 +638,8 @@ class DataAnalyzer:
         # self.balance_dataset()
 
         # print( self.data.info())
-        if self.prob_config.prob_id == "prob-1":
-            self.add_embedding_feature()
+        # if self.prob_config.prob_id == "prob-1":
+        #     self.add_embedding_feature()
 
         print( self.data.info())
         

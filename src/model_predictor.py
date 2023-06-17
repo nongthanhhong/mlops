@@ -80,10 +80,10 @@ class ModelPredictor:
         )
         self.model = mlflow.pyfunc.load_model(model_uri)
 
-        self.columns_to_keep = self.prob_config.categorical_cols + self.prob_config.numerical_cols
+        # self.columns_to_keep = self.prob_config.categorical_cols + self.prob_config.numerical_cols
 
         #using embedding model
-        self.embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
+        # self.embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
 
     def detect_drift(self, feature_df) -> int:
         # watch drift between coming requests and training data
@@ -104,10 +104,10 @@ class ModelPredictor:
         ModelPredictor.save_request_data(
             feature_df, self.prob_config.captured_data_dir, data.id
         )
-        feature_df = feature_df[self.columns_to_keep]
+        # feature_df = feature_df[self.columns_to_keep]
 
-        if self.prob_config.prob_id == 'prob-1':
-            feature_df = input_process(feature_df, self.embedding_model)
+        # if self.prob_config.prob_id == 'prob-1':
+        #     feature_df = input_process(feature_df, self.embedding_model)
 
         
 

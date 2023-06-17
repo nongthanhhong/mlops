@@ -68,6 +68,7 @@ class ModelTrainer:
     @staticmethod
     def train_model(prob_config: ProblemConfig, add_captured_data=False):
 
+        #define model
         class_model = Models(prob_config)
         class_model.catboost_classifier()
 
@@ -78,25 +79,25 @@ class ModelTrainer:
             f"{prob_config.phase_id}_{prob_config.prob_id}_{class_model.EXPERIMENT_NAME}"
         )
 
-        if prob_config.prob_id == 'prob-1':
-            # load train data
-            train_x, train_y = RawDataProcessor.load_train_data(prob_config)
-            x_vec = np.array(train_x["node_embedding"].tolist())
-            x_other = train_x.drop(columns=["node_embedding"])
-            train_x = np.concatenate((x_other, x_vec), axis=1)
-            train_y = train_y.to_numpy()
+        # if prob_config.prob_id == 'prob-1':
+        #     # load train data
+        #     train_x, train_y = RawDataProcessor.load_train_data(prob_config)
+        #     x_vec = np.array(train_x["node_embedding"].tolist())
+        #     x_other = train_x.drop(columns=["node_embedding"])
+        #     train_x = np.concatenate((x_other, x_vec), axis=1)
+        #     train_y = train_y.to_numpy()
 
-            test_x, test_y = RawDataProcessor.load_test_data(prob_config)
-            x_vec = np.array(test_x["node_embedding"].tolist())
-            x_other = test_x.drop(columns=["node_embedding"])
-            test_x = np.concatenate((x_other, x_vec), axis=1)
-        else:
+        #     test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+        #     x_vec = np.array(test_x["node_embedding"].tolist())
+        #     x_other = test_x.drop(columns=["node_embedding"])
+        #     test_x = np.concatenate((x_other, x_vec), axis=1)
+        # else:
             # load train data
-            train_x, train_y = RawDataProcessor.load_train_data(prob_config)
-            train_x = train_x.to_numpy()
-            train_y = train_y.to_numpy()
+        train_x, train_y = RawDataProcessor.load_train_data(prob_config)
+        train_x = train_x.to_numpy()
+        train_y = train_y.to_numpy()
 
-            test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+        test_x, test_y = RawDataProcessor.load_test_data(prob_config)
 
         logging.info(f"Loaded {len(train_x)} train samples")
 
