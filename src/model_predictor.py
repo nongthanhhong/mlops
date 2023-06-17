@@ -107,7 +107,7 @@ class ModelPredictor:
         if self.prob_config.prob_id == 'prob-1':
             feature_df = input_process(feature_df, self.embedding_model)
 
-        dtest =  cb.Pool(feature_df, label=None)
+        # dtest =  cb.Pool(feature_df, label=None)
 
         # feature_df = feature_df[self.columns_to_keep]
 
