@@ -584,7 +584,6 @@ class DataAnalyzer:
         to_acc = self.data['feature7'].astype(float).tolist()
         amount = self.data['feature3'].tolist()
 
-        # print(type(from_acc[0]))
         # Load the embeddings from the file
         if os.path.isfile('./src/model_config/phase-1/prob-1/node_embeddings.bin'):
             embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
@@ -592,11 +591,6 @@ class DataAnalyzer:
             FraudEmbedding(self.prob_config)
             embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
 
-        # feature_embedding = embedding_model.get_feature(from_acc[0], to_acc[0], amount[0])
-        # Get node embeddings for from and to accounts
-        
-        # print(embedding_model.get_vector((str(to_acc[0]))).shape , embedding_model.get_vector((str(from_acc[0]))).shape)
-        
         feature_vector = []
         for i in range(len(from_acc)):
             from_embedding = embedding_model.get_vector(str(from_acc[i]))
@@ -634,7 +628,7 @@ class DataAnalyzer:
         self.handle_incorrect_format()
         self.handle_outliers()
 
-        # self.feature_selection()
+        self.feature_selection()
         # self.balance_dataset()
 
         # print( self.data.info())

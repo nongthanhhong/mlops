@@ -119,11 +119,6 @@ class ModelTrainer:
         print(f' {val} Train data samples, {len(train_x)-val} val data samples , and {len(test_x)} val samples!')
 
 
-        # print(class_weight.compute_class_weight(class_weight = 'balanced',
-        #                                                                 classes = np.unique(train_y),
-        #                                                                 y = train_y))
-        
-
         dtrain = cb.Pool(train_x[:val], label=train_y[:val])
         dval =  cb.Pool(train_x[val:], label=train_y[val:])
         dtest =  cb.Pool(test_x, label=test_y)

@@ -104,6 +104,7 @@ class ModelPredictor:
         ModelPredictor.save_request_data(
             feature_df, self.prob_config.captured_data_dir, data.id
         )
+        
         # feature_df = feature_df[self.columns_to_keep]
 
         # if self.prob_config.prob_id == 'prob-1':
