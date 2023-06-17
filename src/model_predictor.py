@@ -53,7 +53,8 @@ def input_process(feature_df, embedding_model):
 
     x_vec = np.array(feature_df["node_embedding"].tolist())
     x_other = feature_df.drop(columns=["node_embedding"])
-    feature_df = np.concatenate((x_other, x_vec), axis=1)
+    feature_df = pd.DataFrame(np.concatenate((x_other, x_vec), axis=1))
+    logging.info(feature_df)
 
     return feature_df 
 
@@ -103,13 +104,12 @@ class ModelPredictor:
         ModelPredictor.save_request_data(
             feature_df, self.prob_config.captured_data_dir, data.id
         )
+        feature_df = feature_df[self.columns_to_keep]
 
         if self.prob_config.prob_id == 'prob-1':
             feature_df = input_process(feature_df, self.embedding_model)
 
-        # dtest =  cb.Pool(feature_df, label=None)
-
-        # feature_df = feature_df[self.columns_to_keep]
+        
 
         prediction = self.model.predict(feature_df)
         is_drifted = self.detect_drift(feature_df)

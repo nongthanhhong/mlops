@@ -455,7 +455,7 @@ class DataAnalyzer:
 
         #write a .json about features input after eda
     
-        raw_config = json.load(open(self.prob_config.feature_config_path))
+        raw_config = json.load(open(self.prob_config.raw_feature_config_path))
         config ={}
 
         config['numeric_columns'] = []
