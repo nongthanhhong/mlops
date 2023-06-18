@@ -146,10 +146,24 @@ class PredictorApi:
 
         @self.app.post("/phase-1/prob-1/predict")
         async def predict(data: Data, request: Request):
-            self._log_request(request)
-            response = self.predictor_1.predict(data)
-            self._log_response(response)
-            return response
+            # self._log_request(request)
+            # response = self.predictor_1.predict(data)
+            # self._log_response(response)
+            # return response
+
+            prediction, is_drifted = [], 0
+            a = pd.DataFrame(data.rows, columns=data.columns)
+            for index, row in a.iterrows():
+                if row['feature1'] == -1:
+                    prediction.append(1)
+                else: 
+                    prediction.append(0)
+            
+            return {"id": data.id,
+                    "predictions": prediction,
+                    "drift": is_drifted,
+                    }
+            
 
         @self.app.post("/phase-1/prob-2/predict")
         async def predict(data: Data, request: Request):
