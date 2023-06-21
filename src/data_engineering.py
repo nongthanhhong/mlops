@@ -328,9 +328,9 @@ class FeatureExtractor:
 
     # data['percent_item_job'] = data.apply(self.percent_item_job_feature, axis=1)
 
-    data['percent_item_hour'] = data.apply(self.percent_item_hour_feature, axis=1)
+    # data['percent_item_hour'] = data.apply(self.percent_item_hour_feature, axis=1)
 
-    data['percent_job_hour'] = data.apply(self.percent_job_hour_feature, axis=1)
+    # data['percent_job_hour'] = data.apply(self.percent_job_hour_feature, axis=1)
 
     data['percent_hour_fraud'] = data.apply(self.percent_hour_fraud_feature, axis=1)
 
@@ -456,7 +456,7 @@ class DataAnalyzer:
         data = good_data.copy()
         return data.reset_index()
 
-    def feature_selection(self, corr_threshold=0.5, show_chart=False):
+    def feature_selection(self, corr_threshold=0.5, show_chart=False, dev = 1):
         """
         Evaluates the correlation between each feature, and between each feature and the target variable,
         and returns only the features with good correlation.
@@ -495,7 +495,7 @@ class DataAnalyzer:
             plt.show()
             
         if corr_threshold > np.mean(abs(corr_with_target)):
-            corr_threshold = np.mean(abs(corr_with_target))/2
+            corr_threshold = np.mean(abs(corr_with_target))/dev
 
         # Filter out features with low correlation
         good_features = corr_with_target[abs(corr_with_target) >= corr_threshold].index.tolist()
@@ -573,6 +573,7 @@ class DataAnalyzer:
         
         else:
            self.prob2_process()
+           self.feature_selection(dev = 4)
 
         
         
