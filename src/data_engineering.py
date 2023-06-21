@@ -252,45 +252,42 @@ class FeatureExtractor:
     return np.sqrt((row[self.user_lat] - row[self.merchant_lat])**2 + (row[self.user_long] - row[self.merchant_long])**2)
 
   def avg_item_feature(self, row):
-    return abs(row[self.amount] - self.sub_values_dicts.avg_item[row[self.item]])
+
+    return abs(row[self.amount] - self.sub_values_dicts.avg_item.get(row[self.item], 0))
 
   def avg_hour_feature(self, row):
-    return abs(row[self.amount] - self.sub_values_dicts.avg_hour[row[self.hour]])
+    return abs(row[self.amount] - self.sub_values_dicts.avg_hour.get(row[self.hour], 0))
 
 
   def avg_hour_item_feature(self, row):
     
     query = str(int(row[self.hour])) + '_' + str(int(row[self.item]))
-    return abs(row[self.amount] -  self.sub_values_dicts.avg_hour_item[query])
+    return abs(row[self.amount] -  self.sub_values_dicts.avg_hour_item.get(query, 0))
 
   def percent_item_job_feature(self, row):
 
     query = str(int(row[self.item])) + '_' + str(int(row[self.job]))
-    if '-1' in query:
-        return None
-    return self.sub_values_dicts.item_job[query]
+
+    return self.sub_values_dicts.item_job.get(query, 50)
 
   def percent_item_hour_feature(self, row):
 
     query = str(int(row[self.hour])) + '_' + str(int(row[self.item]))
-    return self.sub_values_dicts.item_hour[query]
+    return self.sub_values_dicts.item_hour.get(query, 50)
 
   def percent_job_hour_feature(self, row):
 
     query = str(int(row[self.hour])) + '_' + str(int(row[self.job]))
-    if '-1' in query:
-        return None
-    return self.sub_values_dicts.job_hour[query]
+
+    return self.sub_values_dicts.job_hour.get(query, 50)
 
   def percent_hour_fraud_feature(self, row):
 
-    return self.sub_values_dicts.hour_fraud[row[self.hour]]
+    return self.sub_values_dicts.hour_fraud.get(row[self.hour], 50 )
 
   def percent_job_fraud_feature(self, row):
 
-    if '-1' in str(row[self.job]):
-        return None
-    return self.sub_values_dicts.job_fraud[row[self.job]]
+    return self.sub_values_dicts.job_fraud.get(row[self.job], 50)
 
   def create_new_feature(self, raw_data):
 

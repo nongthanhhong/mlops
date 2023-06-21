@@ -68,16 +68,26 @@ class ModelPredictor:
         raw_df = pd.DataFrame(data.rows, columns=data.columns)
 
         if self.prob_config.prob_id == 'prob-1':
-            config = self.prob_config.raw_feature_config_path
-        else:
-            config = None
-
-        feature_df = RawDataProcessor.apply_category_features(
+            
+            feature_df = RawDataProcessor.apply_category_features(
             raw_df=raw_df,
             categorical_cols=self.prob_config.categorical_cols,
             category_index=self.category_index, 
-            raw_config = config
-        )
+            raw_config = self.prob_config.raw_feature_config_path)
+
+            new_feature = self.extractor.load_new_feature(feature_df)
+            new_feature_df = new_feature[self.columns_to_keep]
+
+        else:
+            
+            feature_df = RawDataProcessor.apply_category_features(
+            raw_df=raw_df,
+            categorical_cols=self.prob_config.categorical_cols,
+            category_index=self.category_index)
+
+            new_feature_df = feature_df[self.columns_to_keep]
+
+        
 
         
 
@@ -86,11 +96,9 @@ class ModelPredictor:
             feature_df, self.prob_config.captured_data_dir, data.id
         )
         
-        
-        new_feature = self.extractor.load_new_feature(feature_df)
         # feature_df = feature_df[self.columns_to_keep]
         
-        prediction = self.model.predict(new_feature[self.columns_to_keep])
+        prediction = self.model.predict(new_feature_df)
         is_drifted = self.detect_drift(feature_df)
 
         run_time = round((time.time() - start_time) * 1000, 0)
