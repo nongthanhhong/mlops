@@ -1,20 +1,19 @@
-import argparse
-import logging
-import os
-import random
-import time
 
-import mlflow
-import pandas as pd
-import uvicorn
+import os
 import yaml
-from fastapi import FastAPI, Request
-from utils import *
-from pandas.util import hash_pandas_object
-from pydantic import BaseModel
+import time
+import mlflow
+import random
+import logging
+import uvicorn
+import argparse
 import numpy as np
-from gensim.models import KeyedVectors
-import catboost as cb
+from utils import *
+import pandas as pd
+from pydantic import BaseModel
+from fastapi import FastAPI, Request
+from pandas.util import hash_pandas_object
+from data_engineering import FeatureExtractor
 
 from problem_config import ProblemConst, create_prob_config, load_feature_configs_dict
 from raw_data_processor import RawDataProcessor
@@ -29,38 +28,9 @@ class Data(BaseModel):
     columns: list
 
 
-def input_process(feature_df, embedding_model):
-
-    from_acc = feature_df['feature4'].astype(float).tolist()
-    to_acc = feature_df['feature7'].astype(float).tolist()
-    amount = feature_df['feature3'].tolist()
-    feature_vector = []
-    for i in range(len(from_acc)):
-        if str(from_acc[i]) in embedding_model:
-            from_embedding = embedding_model.get_vector(str(from_acc[i]))
-        else: 
-            from_embedding = embedding_model.most_similar(str(from_acc[i]))
-
-        if str(to_acc[i]) in embedding_model:
-            to_embedding = embedding_model.get_vector(str(to_acc[i]))
-        else: 
-            to_embedding = embedding_model.most_similar(str(to_acc[i]))
-
-        # Calculate feature vector as concatenation of embeddings and transaction amount
-        feature_vector.append(np.concatenate([from_embedding, to_embedding, [amount[i]]]))
-
-    feature_df = feature_df.copy().assign(node_embedding = feature_vector)
-
-    x_vec = np.array(feature_df["node_embedding"].tolist())
-    x_other = feature_df.drop(columns=["node_embedding"])
-    feature_df = pd.DataFrame(np.concatenate((x_other, x_vec), axis=1))
-    # logging.info(feature_df)
-
-    return feature_df 
-
-
 class ModelPredictor:
     def __init__(self, config_file_path):
+
         with open(config_file_path, "r") as f:
             self.config = yaml.safe_load(f)
         logging.info(f"model-config: {self.config}")
@@ -76,43 +46,51 @@ class ModelPredictor:
 
         # load model
         model_uri = os.path.join(
-            "models:/", self.config["model_name"], str(self.config["model_version"])
-        )
+                                 "models:/", self.config["model_name"], str(self.config["model_version"])
+                                )
         self.model = mlflow.pyfunc.load_model(model_uri)
 
-        # self.columns_to_keep = self.prob_config.categorical_cols + self.prob_config.numerical_cols
+        self.columns_to_keep = self.prob_config.categorical_cols + self.prob_config.numerical_cols
 
-        #using embedding model
-        # self.embedding_model = KeyedVectors.load('./src/model_config/phase-1/prob-1/node_embeddings.bin')
+        path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
+
+        self.extractor = FeatureExtractor(None, path_save)
 
     def detect_drift(self, feature_df) -> int:
         # watch drift between coming requests and training data
         return random.choice([0, 1])
 
     def predict(self, data: Data):
+
         start_time = time.time()
 
         # preprocess
         raw_df = pd.DataFrame(data.rows, columns=data.columns)
+
+        if self.prob_config.prob_id == 'prob-1':
+            config = self.prob_config.raw_feature_config_path
+        else:
+            config = None
+
         feature_df = RawDataProcessor.apply_category_features(
             raw_df=raw_df,
             categorical_cols=self.prob_config.categorical_cols,
-            category_index=self.category_index,
+            category_index=self.category_index, 
+            raw_config = config
         )
+
+        
 
         # save request data for improving models
         ModelPredictor.save_request_data(
             feature_df, self.prob_config.captured_data_dir, data.id
         )
         
-        # feature_df = feature_df[self.columns_to_keep]
-
-        # if self.prob_config.prob_id == 'prob-1':
-        #     feature_df = input_process(feature_df, self.embedding_model)
-
         
-
-        prediction = self.model.predict(feature_df)
+        new_feature = self.extractor.load_new_feature(feature_df)
+        # feature_df = feature_df[self.columns_to_keep]
+        
+        prediction = self.model.predict(new_feature[self.columns_to_keep])
         is_drifted = self.detect_drift(feature_df)
 
         run_time = round((time.time() - start_time) * 1000, 0)
@@ -146,24 +124,10 @@ class PredictorApi:
 
         @self.app.post("/phase-1/prob-1/predict")
         async def predict(data: Data, request: Request):
-            # self._log_request(request)
-            # response = self.predictor_1.predict(data)
-            # self._log_response(response)
-            # return response
-
-            prediction, is_drifted = [], 0
-            a = pd.DataFrame(data.rows, columns=data.columns)
-            for index, row in a.iterrows():
-                if row['feature1'] == -1:
-                    prediction.append(1)
-                else: 
-                    prediction.append(0)
-            
-            return {"id": data.id,
-                    "predictions": prediction,
-                    "drift": is_drifted,
-                    }
-            
+            self._log_request(request)
+            response = self.predictor_1.predict(data)
+            self._log_response(response)
+            return response
 
         @self.app.post("/phase-1/prob-2/predict")
         async def predict(data: Data, request: Request):

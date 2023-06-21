@@ -626,7 +626,7 @@ class DataAnalyzer:
         
         self.preprocess_data()
         self.handle_incorrect_format()
-        self.handle_outliers()
+        # self.handle_outliers()
 
         self.feature_selection()
         # self.balance_dataset()

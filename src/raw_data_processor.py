@@ -6,8 +6,8 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from utils import *
-from eda_data import DataAnalyzer
-from problem_config import ProblemConfig, ProblemConst, get_prob_config
+from data_engineering import DataAnalyzer
+from problem_config import ProblemConfig, ProblemConst, get_prob_config, load_feature_configs_dict
 
 
 class RawDataProcessor:
@@ -29,12 +29,15 @@ class RawDataProcessor:
 
     @staticmethod
     def apply_category_features(
-        raw_df, categorical_cols=None, category_index: dict = None
+        raw_df, categorical_cols=None, category_index: dict = None, raw_config = None
     ):
+        if raw_config != None:
+            feature_configs = load_feature_configs_dict(raw_config)
+            categorical_cols = feature_configs.get("category_columns")
+
         if categorical_cols is None:
-            categorical_cols = []
-        if len(categorical_cols) == 0:
-            return raw_df
+           return raw_df
+            
 
         apply_df = raw_df.copy()
         for col in categorical_cols:
@@ -50,30 +53,10 @@ class RawDataProcessor:
         logging.info("start process_raw_data")
         logging.info("processing data from  %s %s", prob_config.phase_id, prob_config.prob_id)
 
-        # training_data = pd.read_parquet(prob_config.raw_data_path)
-        # training_data, category_index = RawDataProcessor.build_category_features(
-        #     training_data, prob_config.categorical_cols
-        # )
-
-        '''
-        Get data not from raw but eda
-        data eda have category columns didn't encode
-
-        '''
-
         eda = DataAnalyzer(prob_config)
         eda.main()
         training_data = eda.data
-            
-            # training_data = pd.read_parquet(prob_config.raw_data_path)
-            # training_data, category_index = RawDataProcessor.build_category_features(
-            # training_data, prob_config.categorical_cols
-            # )
-            # with open(prob_config.category_index_path, "wb") as f:
-        #     #     pickle.dump(category_index, f)
-        # else :
-        #     training_data = pd.read_parquet(prob_config.preprocessed_data_path)
-        
+
         train, dev = train_test_split(
             training_data,
             test_size=prob_config.test_size,
