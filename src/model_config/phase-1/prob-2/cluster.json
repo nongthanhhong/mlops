@@ -1,13 +1,14 @@
 {
     "algorithm":{
-        "name":"DBSCAN"
+        "name":"MiniBatchKMeans"
 
     },
     "mini":{
-        "n_clusters": 77
+        "n_clusters": 1024,
+        "batch_size": 512
     },
     "k_means":{
-        "n_clusters": 77
+        "n_clusters": 1024
     },
     "dbscan":{
         "eps": 0.5,
