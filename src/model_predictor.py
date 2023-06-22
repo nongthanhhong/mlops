@@ -75,8 +75,8 @@ class ModelPredictor:
                                                         category_index=self.category_index, 
                                                             raw_config = self.prob_config.raw_feature_config_path)
 
-            # new_feature = self.extractor.load_new_feature(feature_df)
-            # new_feature_df = new_feature[self.columns_to_keep]
+            new_feature = self.extractor.load_new_feature(feature_df)
+            new_feature_df = new_feature[self.columns_to_keep]
 
         else:
             
@@ -85,17 +85,16 @@ class ModelPredictor:
                                                 categorical_cols=self.prob_config.categorical_cols,
                                                     category_index=self.category_index)
 
-            # new_feature_df = feature_df[self.columns_to_keep]
+            new_feature_df = feature_df[self.columns_to_keep]
 
         # save request data for improving models
         ModelPredictor.save_request_data(
             feature_df, self.prob_config.captured_data_dir, data.id
         )
         
-        # feature_df = feature_df[self.columns_to_keep]
         
-        prediction = self.model.predict(feature_df)
-        # prediction = self.model.predict(new_feature_df)
+        # prediction = self.model.predict(feature_df)
+        prediction = self.model.predict(new_feature_df)
         is_drifted = self.detect_drift(feature_df)
 
         run_time = round((time.time() - start_time) * 1000, 0)

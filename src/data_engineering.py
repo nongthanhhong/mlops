@@ -253,10 +253,10 @@ class FeatureExtractor:
 
   def avg_item_feature(self, row):
 
-    return abs(row[self.amount] - self.sub_values_dicts.avg_item.get(row[self.item], 0))
+    return abs(row[self.amount] - self.sub_values_dicts.avg_item.get(row[self.item], row[self.amount]/2))
 
   def avg_hour_feature(self, row):
-    return abs(row[self.amount] - self.sub_values_dicts.avg_hour.get(row[self.hour], 0))
+    return abs(row[self.amount] - self.sub_values_dicts.avg_hour.get(row[self.hour], row[self.amount]/2))
 
 
   def avg_hour_item_feature(self, row):
@@ -293,23 +293,23 @@ class FeatureExtractor:
 
     data = raw_data
 
-    data['distance'] = data.apply(self.distance_feature, axis=1)
+    # data['distance'] = data.apply(self.distance_feature, axis=1)
 
     data['avg_item'] = data.apply(self.avg_item_feature, axis=1)
 
     data['avg_hour'] = data.apply(self.avg_hour_feature, axis=1)
 
-    data['avg_hour_item'] = data.apply(self.avg_hour_item_feature, axis=1)
+    # data['avg_hour_item'] = data.apply(self.avg_hour_item_feature, axis=1)
 
-    data['percent_item_job'] = data.apply(self.percent_item_job_feature, axis=1)
+    # data['percent_item_job'] = data.apply(self.percent_item_job_feature, axis=1)
 
-    data['percent_item_hour'] = data.apply(self.percent_item_hour_feature, axis=1)
+    # data['percent_item_hour'] = data.apply(self.percent_item_hour_feature, axis=1)
 
-    data['percent_job_hour'] = data.apply(self.percent_job_hour_feature, axis=1)
+    # data['percent_job_hour'] = data.apply(self.percent_job_hour_feature, axis=1)
 
     data['percent_hour_fraud'] = data.apply(self.percent_hour_fraud_feature, axis=1)
 
-    data['percent_job_fraud'] = data.apply(self.percent_job_fraud_feature, axis=1)
+    # data['percent_job_fraud'] = data.apply(self.percent_job_fraud_feature, axis=1)
 
     self.new_data = data
     return self.new_data
@@ -332,7 +332,7 @@ class FeatureExtractor:
 
     # data['percent_job_hour'] = data.apply(self.percent_job_hour_feature, axis=1)
 
-    # data['percent_hour_fraud'] = data.apply(self.percent_hour_fraud_feature, axis=1)
+    data['percent_hour_fraud'] = data.apply(self.percent_hour_fraud_feature, axis=1)
 
     # data['percent_job_fraud'] = data.apply(self.percent_job_fraud_feature, axis=1)
 
@@ -510,7 +510,7 @@ class DataAnalyzer:
     
     def export_data(self):
         
-        print(self.data.info)
+        print(self.data.info())
         # Delete to ensure save only new data
 
         if os.path.exists(self.eda_path / "preprocessed_train.parquet"):
@@ -569,8 +569,8 @@ class DataAnalyzer:
         self.preprocess_data(target_col = self.target_col)
 
         if self.prob_config.prob_id == 'prob-1':
-          pass
-          # self.prob1_process()
+
+          self.prob1_process()
           # self.feature_selection(dev = 1)
         
         else:
