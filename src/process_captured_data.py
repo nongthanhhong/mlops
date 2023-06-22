@@ -51,6 +51,8 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
     for cluster in np.unique(closest_clusters):
         mask = closest_clusters == cluster
+        if len(labeled_labels[clusterer.labels_ == cluster]) == 0: 
+            continue
         most_common_label = np.bincount(labeled_labels[clusterer.labels_ == cluster]).argmax()
         propagated_labels[mask] = most_common_label
 
