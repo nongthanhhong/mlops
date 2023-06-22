@@ -81,10 +81,11 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
     
     logging.info('Preprocessing captured data....')
     if prob_config.prob_id == 'prob-1':
-        path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
-        extractor = FeatureExtractor(None, path_save)
-        unlabeled_data = extractor.load_new_feature(captured_x)
-        unlabeled_data = unlabeled_data[columns].to_numpy()
+        # path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
+        # extractor = FeatureExtractor(None, path_save)
+        # unlabeled_data = extractor.load_new_feature(captured_x)
+        # unlabeled_data = unlabeled_data[columns].to_numpy()
+        unlabeled_data = captured_x[columns].to_numpy()
     else: 
         unlabeled_data = captured_x[columns].to_numpy()
 
@@ -108,6 +109,7 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
                               
     captured_x.to_parquet(prob_config.captured_x_path, index=False)
     approx_label_df.to_parquet(prob_config.uncertain_y_path, index=False)
+    print(captured_x.info(), '\n', np.unique(approx_label_df, return_counts=True))
     logging.info(f"after process have {len(data)}  train + captured")
     logging.info('Done!')
 
