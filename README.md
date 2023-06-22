@@ -126,14 +126,14 @@
         python src/model_trainer.py --phase-id phase-1 --prob-id prob-1 --add-captured-data true
         ```
 
-    -   Register model: Go to mlflow UI at <http://localhost:5000> and register model using the existing name **phase-1_prob-1_model-1**. The latest model version now should be `2`.
+    -   Register model: Go to mlflow UI at <http://localhost:5000> and register model using the existing name **phase1-prob1**. The latest model version now should be `2`.
 
     -   Update model config at `data/model_config/phase-1/prob-1/model-1.yaml` to:
 
         ```yaml
         phase_id: "phase-1"
         prob_id: "prob-1"
-        model_name: "phase-1_prob-1_model-1"
+        model_name: "phase1-prob1"
         model_version: "2"
         ```
 
