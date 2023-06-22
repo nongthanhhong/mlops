@@ -63,10 +63,10 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
     # Merge the labeled and unlabeled data
     data = np.concatenate((labeled_data, unlabeled_data), axis=0)
 
-    logging.info("Calculate Silhouette score...")
-    score = silhouette_score(data, all_labels)
-    logging.info("Silhouette score: " + str(score)) 
-    
+    # logging.info("Calculate Silhouette score...")
+    # score = silhouette_score(data, all_labels)
+    # logging.info("Silhouette score: " + str(score)) 
+
     return data, all_labels
 
 def label_captured_data(prob_config: ProblemConfig, model_params = None):
