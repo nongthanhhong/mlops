@@ -297,7 +297,7 @@ class FeatureExtractor:
 
     data['avg_item'] = data.apply(self.avg_item_feature, axis=1)
 
-    data['avg_hour'] = data.apply(self.avg_hour_feature, axis=1)
+    # data['avg_hour'] = data.apply(self.avg_hour_feature, axis=1)
 
     # data['avg_hour_item'] = data.apply(self.avg_hour_item_feature, axis=1)
 
@@ -322,7 +322,7 @@ class FeatureExtractor:
 
     data['avg_item'] = data.apply(self.avg_item_feature, axis=1)
 
-    data['avg_hour'] = data.apply(self.avg_hour_feature, axis=1)
+    # data['avg_hour'] = data.apply(self.avg_hour_feature, axis=1)
 
     # data['avg_hour_item'] = data.apply(self.avg_hour_item_feature, axis=1)
 
