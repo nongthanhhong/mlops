@@ -31,12 +31,13 @@ class RawDataProcessor:
     def apply_category_features(
         raw_df, categorical_cols=None, category_index: dict = None, raw_config = None
     ):
-        if raw_config != None:
-            feature_configs = load_feature_configs_dict(raw_config)
-            categorical_cols = feature_configs.get("category_columns")
-
         if categorical_cols is None:
-           return raw_df
+            if raw_config != None:
+                feature_configs = load_feature_configs_dict(raw_config)
+                categorical_cols = feature_configs.get("category_columns")
+
+            else:
+                return raw_df
             
 
         apply_df = raw_df.copy()
