@@ -94,6 +94,7 @@ class ModelPredictor:
         
         
         # prediction = self.model.predict(feature_df)
+        
         prediction = self.model.predict(new_feature_df)
         is_drifted = self.detect_drift(feature_df)
 
