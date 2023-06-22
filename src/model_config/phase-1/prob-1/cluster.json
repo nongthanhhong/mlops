@@ -8,7 +8,7 @@
         "batch_size": 512
     },
     "k_means":{
-        "n_clusters": 100
+        "n_clusters": 10
     },
     "dbscan":{
         "eps": 3,
