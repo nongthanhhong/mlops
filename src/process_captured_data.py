@@ -57,13 +57,16 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
         most_common_label = np.bincount(labeled_labels[clusterer.labels_ == cluster]).argmax()
         propagated_labels[mask] = most_common_label
 
-    # logging.info("Calculate Silhouette score...")
-    # score = silhouette_score(data, labels)
-    # logging.info("Silhouette score: " + str(score)) 
+    
 
     all_labels = np.concatenate((labeled_labels, propagated_labels), axis=0)
     # Merge the labeled and unlabeled data
     data = np.concatenate((labeled_data, unlabeled_data), axis=0)
+
+    logging.info("Calculate Silhouette score...")
+    score = silhouette_score(data, all_labels)
+    logging.info("Silhouette score: " + str(score)) 
+    
     return data, all_labels
 
 def label_captured_data(prob_config: ProblemConfig, model_params = None):
@@ -88,7 +91,7 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
         extractor = FeatureExtractor(None, path_save)
         unlabeled_data = extractor.load_new_feature(captured_x)
         unlabeled_data = unlabeled_data[columns].to_numpy()
-        
+
         # unlabeled_data = captured_x[columns].to_numpy()
 
     else: 
