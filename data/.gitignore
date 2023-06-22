@@ -1,12 +1,12 @@
 # captured_data/**
 # !captured_data/.gitkeep
-captured_data/phase-1/prob-1/processed/**
+captured_data/**/**/processed/**
 
 # model_config/**/*.yaml
 # !model_config/phase-1/prob-1/example.yaml
 
 # raw_data/**
-!raw_data/.gitkeep
+# !raw_data/.gitkeep
 
 train_data/**
 !train_data/.gitkeep
