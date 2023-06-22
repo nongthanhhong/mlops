@@ -1,11 +1,11 @@
 {
     "algorithm":{
-        "name":"MiniBatchKMeans"
+        "name":"k-means"
 
     },
     "mini":{
-        "n_clusters": 2048,
-        "batch_size": 1024
+        "n_clusters": 1024,
+        "batch_size": 512
     },
     "k_means":{
         "n_clusters": 1024
