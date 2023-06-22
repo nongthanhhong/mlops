@@ -81,16 +81,16 @@ class ModelPredictor:
         else:
             
             feature_df = RawDataProcessor.apply_category_features(
-            raw_df=raw_df,
-            categorical_cols=self.prob_config.categorical_cols,
-            category_index=self.category_index)
+                                            raw_df=raw_df,
+                                                categorical_cols=self.prob_config.categorical_cols,
+                                                    category_index=self.category_index)
 
             # new_feature_df = feature_df[self.columns_to_keep]
 
         # save request data for improving models
-        # ModelPredictor.save_request_data(
-        #     feature_df, self.prob_config.captured_data_dir, data.id
-        # )
+        ModelPredictor.save_request_data(
+            feature_df, self.prob_config.captured_data_dir, data.id
+        )
         
         # feature_df = feature_df[self.columns_to_keep]
         

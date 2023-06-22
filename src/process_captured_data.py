@@ -102,7 +102,7 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
 
     logging.info("Initialize and fit the clustering model")
 
-    
+
     data, approx_label = propagate_labels(labeled_data, labeled_labels, unlabeled_data)
     print(np.unique(approx_label))
 
