@@ -1,0 +1,17 @@
+{
+    "algorithm":{
+        "name":"DBSCAN"
+
+    },
+    "mini":{
+        "n_clusters": 77
+    },
+    "k_means":{
+        "n_clusters": 77
+    },
+    "dbscan":{
+        "eps": 0.5,
+        "min_samples": 50
+    }
+    
+}

@@ -1,124 +1,126 @@
-import argparse
-import logging
-import numpy as np
-import pandas as pd
+
 import yaml
-from sklearn.cluster import MiniBatchKMeans
+import json
+import time
+import logging
+import argparse
+import numpy as np
+from tqdm import tqdm
 from utils import *
+import pandas as pd
+from sklearn.metrics import silhouette_score
+from sklearn.cluster import DBSCAN, KMeans, MiniBatchKMeans
 from problem_config import ProblemConfig, ProblemConst, get_prob_config
-from yellowbrick.cluster import KElbowVisualizer
-from eda_data import DataAnalyzer
+from data_engineering import DataAnalyzer, FeatureExtractor
 from raw_data_processor import *
 
 
-def label_captured_data(prob_config: ProblemConfig, model_params):
-    train_x = pd.read_parquet(prob_config.train_x_path).to_numpy()
-    train_y = pd.read_parquet(prob_config.train_y_path).to_numpy()
+def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
+
+
+    
+    config_path = './src/model_config/'+ args.phase_id + '/' + args.prob_id +'/cluster.json'
+    with open(config_path, "r") as f:
+        model_params = json.load(f)
+
+    algorithm = model_params["algorithm"]["name"] # 'k-means' or 'DBSCAN' or 'MiniBatchKMeans'
+    logging.info(f"Use {algorithm} algorithm to labeling captured data")
+
+    if algorithm == 'DBSCAN':
+        # Step 2: Cluster the data using DBSCAN
+        logging.info(f"Parameters: {model_params['dbscan']}")
+        clusterer = DBSCAN(**model_params["dbscan"])
+
+    elif algorithm == 'k-means':
+        # Step 2: Cluster the data using k-means
+        logging.info(f"Parameters: {model_params['k_means']}")
+        clusterer = KMeans(**model_params["k_means"])
+
+    elif algorithm == 'MiniBatchKMeans':
+        # Step 2: Cluster the data using MiniBatchKMeans
+        logging.info(f"Parameters: {model_params['mini']}")
+        clusterer = MiniBatchKMeans(**model_params["mini"])
+
+    logging.info("Fitting labeled data...")
+    clusterer.fit(labeled_data)
+
+    # Step 3: Propagate labels to the rest of the data
+    distances = clusterer.transform(unlabeled_data)
+    closest_clusters = np.argmin(distances, axis=1)
+    propagated_labels = np.empty_like(closest_clusters)
+
+    for cluster in np.unique(closest_clusters):
+        mask = closest_clusters == cluster
+        most_common_label = np.bincount(labeled_labels[clusterer.labels_ == cluster]).argmax()
+        propagated_labels[mask] = most_common_label
+
+    # logging.info("Calculate Silhouette score...")
+    # score = silhouette_score(data, labels)
+    # logging.info("Silhouette score: " + str(score)) 
+
+    all_labels = np.concatenate((labeled_labels, propagated_labels), axis=0)
+    # Merge the labeled and unlabeled data
+    data = np.concatenate((labeled_data, unlabeled_data), axis=0)
+    return data, all_labels
+
+def label_captured_data(prob_config: ProblemConfig, model_params = None):
+
+    data = pd.read_parquet(prob_config.train_x_path)
+    columns = data.columns
+    labeled_data = data.to_numpy()
+    labeled_labels = pd.read_parquet(prob_config.train_y_path).to_numpy().squeeze()
     ml_type = prob_config.ml_type
+    # print(labeled_labels.squeeze().shape)
 
     logging.info("Load captured data")
+
     captured_x = pd.DataFrame()
-    for file_path in prob_config.captured_data_dir.glob("*.parquet"):
+    for file_path in tqdm(prob_config.captured_data_dir.glob("*.parquet"), ncols=100, desc ="Loading...", unit ="file"):
         captured_data = pd.read_parquet(file_path)
         captured_x = pd.concat([captured_x, captured_data])
+    
+    logging.info('Preprocessing captured data....')
+    if prob_config.prob_id == 'prob-1':
+        path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
+        extractor = FeatureExtractor(None, path_save)
+        unlabeled_data = extractor.load_new_feature(captured_x)
+        unlabeled_data = unlabeled_data[columns].to_numpy()
+    else: 
+        unlabeled_data = captured_x[columns].to_numpy()
 
-    eda = DataAnalyzer(prob_config)
-    eda.data, _ = RawDataProcessor.build_category_features(
-            captured_x, prob_config.categorical_cols
-        )
-    captured_x = eda.input_process()
+    n_captured = len(unlabeled_data)
+    n_samples = len(labeled_data) + n_captured
 
-    np_captured_x = captured_x.to_numpy()
-    n_captured = len(np_captured_x)
-    n_samples = len(train_x) + n_captured
+    logging.info(f"Loaded {n_captured} captured samples")
 
-    logging.info(f"Loaded {n_captured} captured samples, {n_samples} train + captured")
+    print('unlabled: ', unlabeled_data.shape)
+    print('labled: ', labeled_data.shape)
 
     logging.info("Initialize and fit the clustering model")
+
     
-    model = MiniBatchKMeans()
-    k_mean = int( len(train_y) / 100) * len(np.unique(train_y))
-    
-    # Use the KElbowVisualizer to find the optimal k using elbow method
-    visualizer = KElbowVisualizer(model, k=(k_mean-5, k_mean + 5))
-    visualizer.fit(train_x)
-    visualizer.show()   
-    optimal_k = visualizer.elbow_value_
-    if optimal_k is None:
-        optimal_k = k_mean
-        print(optimal_k)
-    else: 
-        print(optimal_k)
+    data, approx_label = propagate_labels(labeled_data, labeled_labels, unlabeled_data)
+    print(np.unique(approx_label))
 
-    kmeans_model = MiniBatchKMeans(
-        n_clusters=optimal_k, **model_params
-    )
-    kmeans_model.fit(train_x)
-
-    logging.info("Predict the cluster assignments for the new data")
-    kmeans_clusters = kmeans_model.predict(np_captured_x)
-
-    logging.info(
-        "Assign new labels to the new data based on the labels of the original data in each cluster"
-    )
-    new_labels = []
-    for i in range(optimal_k):
-        mask = kmeans_model.labels_ == i  # mask for data points in cluster i
-        cluster_labels = train_y[mask]  # labels of data points in cluster i
-        if len(cluster_labels) == 0:
-            # If no data points in the cluster, assign a default label (e.g., 0)
-            new_labels.append(0)
-        else:
-            # For a linear regression problem, use the mean of the labels as the new label
-            # For a logistic regression problem, use the mode of the labels as the new label
-            if ml_type == "regression":
-                new_labels.append(np.mean(cluster_labels.flatten()))
-            else:
-                new_labels.append(
-                    np.bincount(cluster_labels.flatten().astype(int)).argmax()
-                )
-
-    approx_label = [new_labels[c] for c in kmeans_clusters]
+    logging.info("Saving new data...")
+    captured_x = pd.DataFrame(data, columns = columns)
     approx_label_df = pd.DataFrame(approx_label, columns=[prob_config.target_col])
-
+                              
     captured_x.to_parquet(prob_config.captured_x_path, index=False)
     approx_label_df.to_parquet(prob_config.uncertain_y_path, index=False)
+    logging.info(f"after process have {len(data)}  train + captured")
+    logging.info('Done!')
 
-
-def merge_raw_captured(prob_config: ProblemConfig):
-
-    logging.info("Load captured data")
-    captured_x = pd.DataFrame()
-    for file_path in prob_config.captured_data_dir.glob("*.parquet"):
-        captured_data = pd.read_parquet(file_path)
-        captured_x = pd.concat([captured_x, captured_data])
-    
-    captured_x = captured_x[["feature4", "feature7", "feature3"]]
-
-    # np_captured_x = captured_x.to_numpy()
-    train_x = pd.read_parquet(prob_config.raw_data_path)[["feature4", "feature7", "feature3"]]
-
-    dtype = train_x.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
-
-    train_x = pd.DataFrame(np.concatenate((train_x, captured_x)), columns=["feature4", "feature7", "feature3"])
-    
-    for column in train_x.columns:
-        train_x[column] = train_x[column].astype(dtype[column])
-    
-    train_x.to_parquet(prob_config.captured_x_path, index=False)
-    logging.info(f"Saved {len(train_x)} samples to {prob_config.captured_x_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
     parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB1)
-    parser.add_argument("--config-path", type=str, default="./src/model_config/minibatchkmeans.yaml")
 
     args = parser.parse_args()
 
-    with open(args.config_path, "r") as f:
-        model_params = yaml.safe_load(f)
-
     prob_config = get_prob_config(args.phase_id, args.prob_id)
+    
     # label_captured_data(prob_config, model_params)
-    merge_raw_captured(prob_config)
+    label_captured_data(prob_config)
+

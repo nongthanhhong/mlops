@@ -569,11 +569,11 @@ class DataAnalyzer:
 
         if self.prob_config.prob_id == 'prob-1':
            self.prob1_process()
-           self.feature_selection()
+           self.feature_selection(dev = 1)
         
         else:
            self.prob2_process()
-           self.feature_selection(dev = 4)
+           self.feature_selection(dev = 5)
 
         
         

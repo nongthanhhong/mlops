@@ -70,12 +70,13 @@ class ModelPredictor:
         if self.prob_config.prob_id == 'prob-1':
             
             feature_df = RawDataProcessor.apply_category_features(
-            raw_df=raw_df,
-            categorical_cols=self.prob_config.categorical_cols,
-            category_index=self.category_index, 
-            raw_config = self.prob_config.raw_feature_config_path)
+                                            raw_df=raw_df,
+                                                 categorical_cols=self.prob_config.categorical_cols,
+                                                        category_index=self.category_index, 
+                                                            raw_config = self.prob_config.raw_feature_config_path)
 
             new_feature = self.extractor.load_new_feature(feature_df)
+
             new_feature_df = new_feature[self.columns_to_keep]
 
         else:
@@ -86,10 +87,6 @@ class ModelPredictor:
             category_index=self.category_index)
 
             new_feature_df = feature_df[self.columns_to_keep]
-
-        
-
-        
 
         # save request data for improving models
         ModelPredictor.save_request_data(

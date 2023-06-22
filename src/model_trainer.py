@@ -92,30 +92,32 @@ class ModelTrainer:
         #     test_x = np.concatenate((x_other, x_vec), axis=1)
         # else:
             # load train data
-        train_x, train_y = RawDataProcessor.load_train_data(prob_config)
-        train_x = train_x.to_numpy()
-        train_y = train_y.to_numpy()
+        
+
+        if add_captured_data:
+            logging.info("Use captured data")
+            train_x, train_y = RawDataProcessor.load_capture_data(prob_config)
+            train_x = train_x.to_numpy()
+            train_y = train_y.to_numpy()
+
+        else:
+            logging.info("Use original data")
+            train_x, train_y = RawDataProcessor.load_train_data(prob_config)
+            train_x = train_x.to_numpy()
+            train_y = train_y.to_numpy()
 
         test_x, test_y = RawDataProcessor.load_test_data(prob_config)
 
         logging.info(f"Loaded {len(train_x)} train samples")
 
-        if add_captured_data:
-            captured_x, captured_y = RawDataProcessor.load_capture_data(prob_config)
-            captured_x = captured_x.to_numpy()
-            captured_y = captured_y.to_numpy()
-            train_x = np.concatenate((train_x, captured_x))
-            train_y = np.concatenate((train_y, captured_y))
-            logging.info(f"added {len(captured_x)} captured samples")
-
-        val = int(len(train_x)-len(train_x)*0.125)
+        val = int(len(train_x)-len(train_x)*0.1)
 
         counter = Counter(train_y)
         # estimate scale_pos_weight value
         print(f'num 1: {counter[1]} - {100*counter[1]/len(train_y)}%, num 0 {counter[0]} - {100*counter[0]/len(train_y)}%')
         
 
-        print(f' {val} Train data samples, {len(train_x)-val} val data samples , and {len(test_x)} val samples!')
+        print(f' {val} Train samples, {len(train_x)-val} val samples , and {len(test_x)} test samples!')
 
 
         dtrain = cb.Pool(train_x[:val], label=train_y[:val])
@@ -127,9 +129,7 @@ class ModelTrainer:
         model.fit(dtrain, 
                   eval_set=dval,
                   **class_model.train)
-
-
-
+        
         # evaluate
         predictions = model.predict(dtest)
 
@@ -170,16 +170,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase-id", type=str, default=ProblemConst.PHASE)
     parser.add_argument("--prob-id", type=str, default=ProblemConst.PROB1)
-    parser.add_argument("--config-path", type=str, default="./src/model_config/xgboost.yaml")
     parser.add_argument(
         "--add-captured-data", type=lambda x: (str(x).lower() == "true"), default=False
     )
     args = parser.parse_args()
 
     prob_config = get_prob_config(args.phase_id, args.prob_id)
-    
-    # if os.path.exists(prob_config.captured_x_path):
-    #     args.add_captured_data = True
+
     ModelTrainer.train_model(
         prob_config, add_captured_data=args.add_captured_data
     )
