@@ -16,10 +16,11 @@ from raw_data_processor import *
 
 
 class ClusteringEvaluator:
-    def __init__(self, X, y, model):
+    def __init__(self, X, y, model, n_cluster):
         self.X = X
         self.y = y
         self.model = model
+        self.n_cluster = n_cluster
 
     def evaluate_clustering(self):
 
@@ -34,8 +35,8 @@ class ClusteringEvaluator:
         new_labels = []
 
         kmeans_clusters = self.model.predict(self.X)
-        print(len(self.model.labels_))
-        for cluster in np.unique(self.model.labels_):
+
+        for cluster in range(self.n_cluster):
             mask = self.model.labels_ == cluster
             most_common_label = np.bincount(self.y[mask]).argmax()
             new_labels.append(most_common_label)
@@ -80,17 +81,19 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
         # Step 2: Cluster the data using k-means
         logging.info(f"Parameters: {model_params['k_means']}")
         clusterer = KMeans(**model_params["k_means"])
+        n_cluster = model_params["k_means"]["n_clusters"]
 
     elif algorithm == 'MiniBatchKMeans':
         # Step 2: Cluster the data using MiniBatchKMeans
         logging.info(f"Parameters: {model_params['mini']}")
         clusterer = MiniBatchKMeans(**model_params["mini"])
+        n_cluster = model_params["mini"]["n_clusters"]
 
     logging.info("Fitting labeled data...")
     clusterer.fit(labeled_data)
 
     logging.info('Evaluate cluster model... ')
-    evaluator = ClusteringEvaluator(labeled_data, labeled_labels, clusterer)
+    evaluator = ClusteringEvaluator(labeled_data, labeled_labels, clusterer, n_cluster)
     evaluator.evaluate_clustering()
 
     # Step 3: Propagate labels to the rest of the data
@@ -99,7 +102,7 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
     kmeans_clusters = clusterer.predict(unlabeled_data)
     
-    for cluster in np.unique(clusterer.labels_):
+    for cluster in range(n_cluster):
         mask = clusterer.labels_ == cluster
         most_common_label = np.bincount(labeled_labels[mask]).argmax()
         new_labels.append(most_common_label)
