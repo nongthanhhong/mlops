@@ -33,7 +33,7 @@ class ClusteringEvaluator:
         new_labels = []
 
         kmeans_clusters = self.model.predict(self.X)
-
+        print(len(self.model.labels_))
         for cluster in np.unique(self.model.labels_):
             mask = self.model.labels_ == cluster
             most_common_label = np.bincount(self.y[mask]).argmax()
