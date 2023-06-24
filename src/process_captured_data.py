@@ -30,22 +30,23 @@ class ClusteringEvaluator:
         silhouette_time = end_time - start_time
 
         # Calculate Rand Index
-        new_labels = []
+        distances = self.model.transform(self.X)
+        closest_clusters = np.argmin(distances, axis=1)
+        propagated_labels = np.empty_like(closest_clusters)
 
-        kmeans_clusters = self.model.predict(self.X)
-        print(len(self.model.labels_))
-        for cluster in np.unique(self.model.labels_):
-            mask = self.model.labels_ == cluster
-            most_common_label = np.bincount(self.y[mask]).argmax()
-            new_labels.append(most_common_label)
-
-        approx_label = [new_labels[c] for c in kmeans_clusters]
+        for cluster in np.unique(closest_clusters):
+            mask = closest_clusters == cluster
+            if len(self.y[self.model.labels_ == cluster]) == 0: 
+                propagated_labels[mask] = 0
+                continue
+            most_common_label = np.bincount(self.y[self.model.labels_ == cluster]).argmax()
+            propagated_labels[mask] = most_common_label
 
         print('Truth labels : ', np.unique(self.y, return_counts= True))
-        print('Predicted labels: ', np.unique(approx_label, return_counts=True))
+        print('Predicted labels: ', np.unique(propagated_labels, return_counts=True))
 
         start_time = time.time()
-        rand_index = metrics.adjusted_rand_score(self.y, approx_label)
+        rand_index = metrics.adjusted_rand_score(self.y, propagated_labels)
         end_time = time.time()
         rand_index_time = end_time - start_time
 
