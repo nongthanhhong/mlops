@@ -8,17 +8,60 @@ import numpy as np
 from tqdm import tqdm
 from utils import *
 import pandas as pd
-from sklearn.metrics import silhouette_score
+from sklearn import metrics
 from sklearn.cluster import DBSCAN, KMeans, MiniBatchKMeans
 from problem_config import ProblemConfig, ProblemConst, get_prob_config
 from data_engineering import DataAnalyzer, FeatureExtractor
 from raw_data_processor import *
 
 
+class ClusteringEvaluator:
+    def __init__(self, X, y, model):
+        self.X = X
+        self.y = y
+        self.model = model
+
+    def evaluate_clustering(self):
+
+        # Calculate Silhouette Coefficient
+        start_time = time.time()
+        silhouette = metrics.silhouette_score(self.X, self.model.labels_)
+        end_time = time.time()
+        silhouette_time = end_time - start_time
+
+        # Calculate Rand Index
+        new_labels = []
+
+        kmeans_clusters = self.model.predict(self.X)
+
+        for cluster in np.unique(self.model.labels_):
+            mask = self.model.labels_ == cluster
+            most_common_label = np.bincount(self.y[mask]).argmax()
+            new_labels.append(most_common_label)
+
+        approx_label = [new_labels[c] for c in kmeans_clusters]
+
+        print('Truth labels : ', np.unique(self.y, return_counts= True))
+        print('Predicted labels: ', np.unique(approx_label, return_counts=True))
+
+        start_time = time.time()
+        rand_index = metrics.adjusted_rand_score(self.y, approx_label)
+        end_time = time.time()
+        rand_index_time = end_time - start_time
+
+        # Calculate Sum of Squared Distance (SSD)
+        start_time = time.time()
+        ssd = self.model.inertia_
+        end_time = time.time()
+        ssd_time = end_time - start_time
+
+        logging.info(f'Silhouette Coefficient: {silhouette:.2f} (Elapsed time: {silhouette_time:.2f} seconds)')
+        logging.info(f'Rand Index: {rand_index:.2f} (Elapsed time: {rand_index_time:.2f} seconds)')
+        logging.info(f'Sum of Squared Distance (SSD): {ssd:.2f} (Elapsed time: {ssd_time:.2f} seconds)')
+
+
 def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
-
-    
     config_path = './src/model_config/'+ args.phase_id + '/' + args.prob_id +'/cluster.json'
     with open(config_path, "r") as f:
         model_params = json.load(f)
@@ -44,6 +87,10 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
     logging.info("Fitting labeled data...")
     clusterer.fit(labeled_data)
 
+    logging.info('Evaluate cluster model... ')
+    evaluator = ClusteringEvaluator(labeled_data, labeled_labels, clusterer)
+    evaluator.evaluate_clustering()
+
     # Step 3: Propagate labels to the rest of the data
     distances = clusterer.transform(unlabeled_data)
     closest_clusters = np.argmin(distances, axis=1)
@@ -57,15 +104,9 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
         most_common_label = np.bincount(labeled_labels[clusterer.labels_ == cluster]).argmax()
         propagated_labels[mask] = most_common_label
 
-    
-
     all_labels = np.concatenate((labeled_labels, propagated_labels), axis=0)
     # Merge the labeled and unlabeled data
     data = np.concatenate((labeled_data, unlabeled_data), axis=0)
-
-    # logging.info("Calculate Silhouette score...")
-    # score = silhouette_score(data, all_labels)
-    # logging.info("Silhouette score: " + str(score)) 
 
     return data, all_labels
 
