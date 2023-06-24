@@ -30,24 +30,24 @@ class ClusteringEvaluator:
         silhouette_time = end_time - start_time
 
         # Calculate Rand Index
-        distances = self.model.transform(self.X)
-        closest_clusters = np.argmin(distances, axis=1)
-        propagated_labels = np.empty_like(closest_clusters)
 
-        for cluster in np.unique(closest_clusters):
-            mask = closest_clusters == cluster
-            if len(self.y[self.model.labels_ == cluster]) == 0: 
-                propagated_labels[mask] = 0
-                continue
-            most_common_label = np.bincount(self.y[self.model.labels_ == cluster]).argmax()
-            propagated_labels[mask] = most_common_label
-            
-        del distances
+        new_labels = []
+
+        kmeans_clusters = self.model.predict(self.X)
+        print(len(self.model.labels_))
+        for cluster in np.unique(self.model.labels_):
+            mask = self.model.labels_ == cluster
+            most_common_label = np.bincount(self.y[mask]).argmax()
+            new_labels.append(most_common_label)
+
+        approx_label = [new_labels[c] for c in kmeans_clusters]
+        
+        
         print('Truth labels : ', np.unique(self.y, return_counts= True))
-        print('Predicted labels: ', np.unique(propagated_labels, return_counts=True))
+        print('Predicted labels: ', np.unique(approx_label, return_counts=True))
 
         start_time = time.time()
-        rand_index = metrics.adjusted_rand_score(self.y, propagated_labels)
+        rand_index = metrics.adjusted_rand_score(self.y, approx_label)
         end_time = time.time()
         rand_index_time = end_time - start_time
 
@@ -95,17 +95,16 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
     # Step 3: Propagate labels to the rest of the data
     logging.info("Labeling new data...")
-    distances = clusterer.transform(unlabeled_data)
-    closest_clusters = np.argmin(distances, axis=1)
-    propagated_labels = np.empty_like(closest_clusters)
+    new_labels = []
 
-    for cluster in np.unique(closest_clusters):
-        mask = closest_clusters == cluster
-        if len(labeled_labels[clusterer.labels_ == cluster]) == 0: 
-            propagated_labels[mask] = 0
-            continue
-        most_common_label = np.bincount(labeled_labels[clusterer.labels_ == cluster]).argmax()
-        propagated_labels[mask] = most_common_label
+    kmeans_clusters = clusterer.predict(unlabeled_data)
+    
+    for cluster in np.unique(clusterer.labels_):
+        mask = clusterer.labels_ == cluster
+        most_common_label = np.bincount(labeled_labels[mask]).argmax()
+        new_labels.append(most_common_label)
+
+    propagated_labels = [new_labels[c] for c in kmeans_clusters]
 
     all_labels = np.concatenate((labeled_labels, propagated_labels), axis=0)
     # Merge the labeled and unlabeled data
