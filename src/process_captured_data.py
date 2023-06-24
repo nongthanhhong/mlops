@@ -39,6 +39,9 @@ class ClusteringEvaluator:
             most_common_label = np.bincount(self.y[mask]).argmax()
             new_labels.append(most_common_label)
 
+        print(len(kmeans_clusters))
+        print(len(new_labels))
+
         approx_label = [new_labels[c] for c in kmeans_clusters]
 
         print('Truth labels : ', np.unique(self.y, return_counts= True))
