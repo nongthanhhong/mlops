@@ -40,7 +40,7 @@ class ClusteringEvaluator:
             new_labels.append(most_common_label)
 
         print(len(kmeans_clusters))
-        print(np.unique(new_labels))
+        print(len(new_labels))
 
         approx_label = [new_labels[c] for c in kmeans_clusters]
 
