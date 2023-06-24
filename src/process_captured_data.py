@@ -38,6 +38,10 @@ class ClusteringEvaluator:
 
         for cluster in range(self.n_cluster):
             mask = self.model.labels_ == cluster
+            if len(self.y[mask]) == 0:
+                # If no data points in the cluster, assign a default label (e.g., 0)
+                new_labels.append(0)
+                continue
             most_common_label = np.bincount(self.y[mask]).argmax()
             new_labels.append(most_common_label)
 
@@ -104,6 +108,10 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
     
     for cluster in range(n_cluster):
         mask = clusterer.labels_ == cluster
+        if len(labeled_labels[mask]) == 0:
+            # If no data points in the cluster, assign a default label (e.g., 0)
+            new_labels.append(0)
+            continue
         most_common_label = np.bincount(labeled_labels[mask]).argmax()
         new_labels.append(most_common_label)
 
