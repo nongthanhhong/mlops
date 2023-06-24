@@ -4,8 +4,8 @@
 
     },
     "mini":{
-        "n_clusters": 2048,
-        "batch_size": 1024
+        "n_clusters": 1280,
+        "batch_size": 8096
     },
     "k_means":{
         "n_clusters": 1500
