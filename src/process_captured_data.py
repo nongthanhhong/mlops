@@ -40,7 +40,7 @@ class ClusteringEvaluator:
             new_labels.append(most_common_label)
 
         print(len(kmeans_clusters))
-        print(len(new_labels))
+        print(np.unique(new_labels))
 
         approx_label = [new_labels[c] for c in kmeans_clusters]
 
@@ -95,6 +95,7 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
     evaluator.evaluate_clustering()
 
     # Step 3: Propagate labels to the rest of the data
+    logging.info("Labeling new data...")
     distances = clusterer.transform(unlabeled_data)
     closest_clusters = np.argmin(distances, axis=1)
     propagated_labels = np.empty_like(closest_clusters)
