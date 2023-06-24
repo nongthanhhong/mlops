@@ -94,7 +94,11 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
         n_cluster = model_params["mini"]["n_clusters"]
 
     logging.info("Fitting labeled data...")
+    
+    start_time = time.time()
     clusterer.fit(labeled_data)
+    end_time = time.time()
+    logging.info(f'Elapsed time: {(end_time - start_time):.2f}')
 
     logging.info('Evaluate cluster model... ')
     evaluator = ClusteringEvaluator(labeled_data, labeled_labels, clusterer, n_cluster)
