@@ -4,11 +4,11 @@
 
     },
     "mini":{
-        "n_clusters": 4096,
+        "n_clusters": 8182,
         "batch_size": 2048
     },
     "k_means":{
-        "n_clusters": 4096
+        "n_clusters": 8182
     },
     "dbscan":{
         "eps": 3,
