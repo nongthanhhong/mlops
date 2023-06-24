@@ -41,7 +41,8 @@ class ClusteringEvaluator:
                 continue
             most_common_label = np.bincount(self.y[self.model.labels_ == cluster]).argmax()
             propagated_labels[mask] = most_common_label
-
+            
+        del distances
         print('Truth labels : ', np.unique(self.y, return_counts= True))
         print('Predicted labels: ', np.unique(propagated_labels, return_counts=True))
 
