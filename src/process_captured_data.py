@@ -51,6 +51,17 @@ class ClusteringEvaluator:
         print('Truth labels : ', np.unique(self.y, return_counts= True))
         print('Predicted labels: ', np.unique(approx_label, return_counts=True))
 
+        # compute contingency matrix (also called confusion matrix)
+        start_time = time.time()
+
+        contingency_matrix = metrics.cluster.contingency_matrix(self.y, approx_label)
+        # calculate purity for each cluster
+        purity = np.amax(contingency_matrix, axis=0) / np.sum(contingency_matrix, axis=0)
+        end_time = time.time()
+        purity_time = end_time - start_time
+
+
+
         start_time = time.time()
         rand_index = metrics.adjusted_rand_score(self.y, approx_label)
         end_time = time.time()
@@ -65,6 +76,7 @@ class ClusteringEvaluator:
         logging.info(f'Silhouette Coefficient: {silhouette:.2f} (Elapsed time: {silhouette_time:.2f} seconds)')
         logging.info(f'Rand Index: {rand_index:.2f} (Elapsed time: {rand_index_time:.2f} seconds)')
         logging.info(f'Sum of Squared Distance (SSD): {ssd:.2f} (Elapsed time: {ssd_time:.2f} seconds)')
+        logging.info(f'Avg Purity of clustering: {np.mean(purity):.2f} (Elapsed time: {purity_time:.2f} seconds)')
 
 
 def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
@@ -142,6 +154,8 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
     for file_path in tqdm(prob_config.captured_data_dir.glob("*.parquet"), ncols=100, desc ="Loading...", unit ="file"):
         captured_data = pd.read_parquet(file_path)
         captured_x = pd.concat([captured_x, captured_data])
+    captured_x = captured_x.drop_duplicates()
+
     
     logging.info('Preprocessing captured data....')
     if prob_config.prob_id == 'prob-1':
@@ -149,8 +163,6 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
         extractor = FeatureExtractor(None, path_save)
         unlabeled_data = extractor.load_new_feature(captured_x)
         unlabeled_data = unlabeled_data[columns].to_numpy()
-
-        # unlabeled_data = captured_x[columns].to_numpy()
 
     else: 
         unlabeled_data = captured_x[columns].to_numpy()
@@ -167,7 +179,7 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
 
 
     data, approx_label = propagate_labels(labeled_data, labeled_labels, unlabeled_data)
-    print(np.unique(approx_label))
+    # print(np.unique(approx_label))
 
     logging.info("Saving new data...")
     captured_x = pd.DataFrame(data, columns = columns)

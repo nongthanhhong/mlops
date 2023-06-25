@@ -1,14 +1,16 @@
 {
     "algorithm":{
-        "name":"MiniBatchKMeans"
+        "name":"k-means"
 
     },
     "mini":{
         "n_clusters": 10000,
-        "batch_size": 20000
+        "batch_size": 20000,
+        "random_state": 123
     },
     "k_means":{
-        "n_clusters": 8182
+        "n_clusters": 4086,
+        "random_state": 123
     },
     "dbscan":{
         "eps": 3,
