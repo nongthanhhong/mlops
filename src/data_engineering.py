@@ -538,7 +538,11 @@ class DataAnalyzer:
 
         logging.info("Extracting new feature...")
         path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
-        os.remove(path_save)
+        
+        if os.path.isfile(path_save):
+            logging.info("Remove old file")
+            os.remove(path_save)
+        
         extractor = FeatureExtractor(self.data, path_save)
         self.data = extractor.create_new_feature(self.data)
         logging.info("Features extracted!")
