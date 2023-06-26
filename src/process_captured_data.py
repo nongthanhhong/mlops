@@ -142,12 +142,22 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
     return data, all_labels
 
-def label_captured_data(prob_config: ProblemConfig, model_params = None):
+def label_captured_data(prob_config: ProblemConfig):
 
     data = pd.read_parquet(prob_config.train_x_path)
+    data_dtype = data.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
     columns = data.columns
     labeled_data = data.to_numpy()
-    labeled_labels = pd.read_parquet(prob_config.train_y_path).to_numpy().squeeze()
+
+    # for c, (k, v) in zip(columns, data_dtype.items()):
+    #     print(c==k, v)
+    # return
+
+    labels = pd.read_parquet(prob_config.train_y_path)
+    labeled_labels = labels.values.squeeze()
+    labels_dtype = labels.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
+
+
     ml_type = prob_config.ml_type
     # print(labeled_labels.squeeze().shape)
 
@@ -170,10 +180,11 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
 
         extractor = FeatureExtractor(captured_x, path_save)
         unlabeled_data = extractor.create_new_feature(captured_x)
-        unlabeled_data = unlabeled_data[columns].to_numpy()
+        
+        unlabeled_data = unlabeled_data[columns].values
 
     else: 
-        unlabeled_data = captured_x[columns].to_numpy()
+        unlabeled_data = captured_x[columns].values
 
     n_captured = len(unlabeled_data)
     n_samples = len(labeled_data) + n_captured
@@ -185,19 +196,27 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
 
     logging.info("Initialize and fit the clustering model")
 
-
+   
     data, approx_label = propagate_labels(labeled_data, labeled_labels, unlabeled_data)
     # print(np.unique(approx_label))
 
     logging.info("Saving new data...")
     captured_x = pd.DataFrame(data, columns = columns)
+
+    for column in captured_x.columns:
+        captured_x[column] = captured_x[column].astype(data_dtype[column])
+
     approx_label_df = pd.DataFrame(approx_label, columns=[prob_config.target_col])
+    for column in approx_label_df.columns:
+        approx_label_df[column] = approx_label_df[column].astype(labels_dtype[column])
                               
     captured_x.to_parquet(prob_config.captured_x_path, index=False)
     approx_label_df.to_parquet(prob_config.uncertain_y_path, index=False)
-    print(captured_x.info(), '\n', np.unique(approx_label_df, return_counts=True))
+    print(captured_x.info(), '\n', approx_label_df.info(), "\n", np.unique(approx_label_df, return_counts=True))
     logging.info(f"after process have {len(data)}  train + captured")
     logging.info('Done!')
+
+    print(len(np.unique(pd.concat([captured_x['feature4'], captured_x['feature7']]))))
 
 
 if __name__ == "__main__":
