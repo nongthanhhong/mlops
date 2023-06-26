@@ -4,8 +4,10 @@
 
     },
     "mini":{
+        "init": "random",
+        "max_no_improvement": 1000,
         "n_clusters": 16000,
-        "batch_size": 20000,
+        "batch_size": 100000,
         "random_state": 123
     },
     "k_means":{
