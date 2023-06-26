@@ -54,6 +54,9 @@ class ModelPredictor:
 
         path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
 
+        if os.path.isfile("./src/model_config/phase-1/prob-1/sub_values_captured.pkl"):
+            path_save = "./src/model_config/phase-1/prob-1/sub_values_captured.pkl"
+
         self.extractor = FeatureExtractor(None, path_save)
 
     def detect_drift(self, feature_df) -> int:

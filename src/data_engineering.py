@@ -190,12 +190,21 @@ def calculate_sub_values(extractor):
   sub_values.job_hour = calculator.percent_1(data, hour, job)
   sub_values.hour_type = calculator.percent_1(data, type_trans, hour)
 
-  sub_values.hour_fraud = calculator.percent_2(data, hour, label)
-  sub_values.job_fraud = calculator.percent_2(data, job, label)
-  sub_values.type_fraud = calculator.percent_2(data, type_trans, label)
-
+  if label in data.columns:
+    sub_values.hour_fraud = calculator.percent_2(data, hour, label)
+    sub_values.job_fraud = calculator.percent_2(data, job, label)
+    sub_values.type_fraud = calculator.percent_2(data, type_trans, label)
+  else:
+    # Load the instance from the old sub_values file
+    old_path_file = "./src/model_config/phase-1/prob-1/sub_values.pkl"
+    with open(old_path_file, 'rb') as f:
+        old_sub_values = pickle.load(f)
+    sub_values.hour_fraud = old_sub_values.hour_fraud 
+    sub_values.job_fraud = old_sub_values.job_fraud
+    sub_values.type_fraud = old_sub_values.type_fraud
 
   # Save the instance to a file
+  logging.info(f"Save sub_values to {path_file}")
   with open(path_file, 'wb') as f:
       pickle.dump(sub_values, f)
 
@@ -228,7 +237,7 @@ class FeatureExtractor:
   Input: raw data
   Output: new data (raw data + new extracted features)
   '''
-  def __init__(self, df, path_file):
+  def __init__(self, df = None, path_file = None):
     if df is not None:
         self.data = df.copy()
     self.path_file = path_file # path to saved sub value file
@@ -268,26 +277,26 @@ class FeatureExtractor:
 
     query = str(int(row[self.item])) + '_' + str(int(row[self.job]))
 
-    return self.sub_values_dicts.item_job.get(query, 50)
+    return self.sub_values_dicts.item_job.get(query, 80)
 
   def percent_item_hour_feature(self, row):
 
     query = str(int(row[self.hour])) + '_' + str(int(row[self.item]))
-    return self.sub_values_dicts.item_hour.get(query, 50)
+    return self.sub_values_dicts.item_hour.get(query, 80)
 
   def percent_job_hour_feature(self, row):
 
     query = str(int(row[self.hour])) + '_' + str(int(row[self.job]))
 
-    return self.sub_values_dicts.job_hour.get(query, 50)
+    return self.sub_values_dicts.job_hour.get(query, 80)
 
   def percent_hour_fraud_feature(self, row):
 
-    return self.sub_values_dicts.hour_fraud.get(row[self.hour], 50 )
+    return self.sub_values_dicts.hour_fraud.get(row[self.hour], 80 )
 
   def percent_job_fraud_feature(self, row):
 
-    return self.sub_values_dicts.job_fraud.get(row[self.job], 50)
+    return self.sub_values_dicts.job_fraud.get(row[self.job], 80)
 
   def create_new_feature(self, raw_data):
 
@@ -530,8 +539,7 @@ class DataAnalyzer:
         logging.info("Extracting new feature...")
         path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
         extractor = FeatureExtractor(self.data, path_save)
-        new_data = extractor.create_new_feature(self.data)
-        self.data = new_data
+        self.data = extractor.create_new_feature(self.data)
         logging.info("Features extracted!")
     
     def prob2_process(self):

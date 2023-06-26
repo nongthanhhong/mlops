@@ -159,8 +159,8 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
     
     logging.info('Preprocessing captured data....')
     if prob_config.prob_id == 'prob-1':
-        path_save = "./src/model_config/phase-1/prob-1/sub_values.pkl"
-        extractor = FeatureExtractor(None, path_save)
+        path_save = "./src/model_config/phase-1/prob-1/sub_values_captured.pkl"
+        extractor = FeatureExtractor(captured_x, path_save)
         unlabeled_data = extractor.create_new_feature(captured_x)
         unlabeled_data = unlabeled_data[columns].to_numpy()
 
