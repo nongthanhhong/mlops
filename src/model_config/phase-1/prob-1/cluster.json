@@ -9,8 +9,7 @@
         "random_state": 123
     },
     "k_means":{
-        "n_clusters": 4086,
-        "random_state": 123
+        "n_clusters": 8196
     },
     "dbscan":{
         "eps": 3,
