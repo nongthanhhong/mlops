@@ -25,12 +25,15 @@ class ClusteringEvaluator:
     def evaluate_clustering(self):
 
         # Calculate Silhouette Coefficient
+        logging.info("Calculate silhouette_score...")
         start_time = time.time()
         silhouette = metrics.silhouette_score(self.X, self.model.labels_)
         end_time = time.time()
         silhouette_time = end_time - start_time
 
         # Calculate Rand Index
+        logging.info("Calculate rand_index...")
+
 
         new_labels = []
 
@@ -164,7 +167,7 @@ def label_captured_data(prob_config: ProblemConfig, model_params = None):
         if os.path.isfile(path_save):
             logging.info("Remove old file")
             os.remove(path_save)
-            
+
         extractor = FeatureExtractor(captured_x, path_save)
         unlabeled_data = extractor.create_new_feature(captured_x)
         unlabeled_data = unlabeled_data[columns].to_numpy()
