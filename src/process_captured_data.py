@@ -146,6 +146,11 @@ def label_captured_data(prob_config: ProblemConfig):
     columns = data.columns
     labeled_data = data.to_numpy()
 
+    # new = pd.read_parquet(prob_config.captured_x_path)
+    # new = new[columns]
+    # new.to_parquet(prob_config.captured_x_path, index=False)
+    # return
+
     # for c, (k, v) in zip(columns, data_dtype.items()):
     #     print(c==k, v)
     # return
@@ -217,7 +222,7 @@ def label_captured_data(prob_config: ProblemConfig):
     logging.info(f"after process have {len(data)}  train + captured")
     logging.info('Done!')
 
-    print(len(np.unique(pd.concat([captured_x['feature4'], captured_x['feature7']]))))
+    # print(len(np.unique(pd.concat([captured_x['feature4'], captured_x['feature7']]))))
 
 
 if __name__ == "__main__":
