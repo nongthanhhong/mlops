@@ -27,7 +27,8 @@ run_predictor() {
 
     docker build -f platform/model_predictor/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
     IMAGE_NAME=$IMAGE_NAME IMAGE_TAG=$IMAGE_TAG \
-        MODEL_1_CONFIG_PATH=$model_1_config_path MODEL_2_CONFIG_PATH=$model_2_config_path PORT=$port \
+        MODEL_1_CONFIG_PATH=$model_1_config_path MODEL_2_CONFIG_PATH=$model_2_config_path \
+        PORT=$port \
         docker-compose -f platform/model_predictor/docker-compose.yml up -d
 }
 
