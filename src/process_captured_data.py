@@ -113,8 +113,11 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
     saved_model = f'./src/model_config/{args.phase_id }/{args.prob_id }/{n_cluster}_{algorithm}_model.pkl'
     if os.path.isfile(saved_model):
+        logging.info("Oh existed trained model, nice!")
         clusterer = joblib.load(saved_model)
     else:
+        logging.info("Ops, waiting for happiness :))")
+
         start_time = time.time()
         clusterer.fit(labeled_data)
         end_time = time.time()
