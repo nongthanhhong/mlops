@@ -11,6 +11,7 @@ import catboost as cb
 import xgboost as xgb
 from collections import Counter
 from mlflow.models.signature import infer_signature
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, classification_report, confusion_matrix, roc_curve
 import matplotlib.pyplot as plt
 
@@ -108,9 +109,16 @@ class ModelTrainer:
 
         test_x, test_y = RawDataProcessor.load_test_data(prob_config)
 
+        train_x, val_x, train_y, val_y = train_test_split(
+            train_x, train_y,
+            test_size=0.2,
+            random_state=42,
+            stratify= train_y
+        )
+
         logging.info(f"Loaded {len(train_x)} train samples")
 
-        val = int(len(train_x)-len(train_x)*0.1)
+        val = int(len(train_x)-len(train_x)*0.2)
 
         counter = Counter(train_y)
         # estimate scale_pos_weight value
@@ -120,8 +128,9 @@ class ModelTrainer:
         print(f' {val} Train samples, {len(train_x)-val} val samples , and {len(test_x)} test samples!')
 
 
-        dtrain = cb.Pool(train_x[:val], label=train_y[:val])
-        dval =  cb.Pool(train_x[val:], label=train_y[val:])
+        
+        dtrain = cb.Pool(train_x, label=train_y)
+        dval =  cb.Pool(val_x, label=val_y)
         dtest =  cb.Pool(test_x, label=test_y)
 
         model = class_model.model
