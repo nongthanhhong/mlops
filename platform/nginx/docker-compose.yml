@@ -6,7 +6,16 @@ services:
     ports:
       - ${PORT}:80
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./run_env/log/:/var/log/nginx/
+    command:
+      - bash
+      - -c
+      - 'nginx -g "daemon off;"'
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   model_predictor_1:
     # Configuration for your first model_predictor instance goes here
@@ -55,7 +64,7 @@ services:
 
     ports:
       - "8001:8000"
-      
+
   model_predictor_3:
     # Configuration for your third model_predictor instance goes here
     # ...

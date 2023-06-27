@@ -46,6 +46,5 @@ nginx_down:
 	PORT=5040 docker-compose -f platform/nginx/docker-compose.yml down
 
 nginx_restart:
-	PORT=5040 docker-compose -f platform/nginx/docker-compose.yml stop
-	PORT=5040 docker-compose -f platform/nginx/docker-compose.yml start
+	PORT=5040 docker-compose -f platform/nginx/docker-compose.yml restart
 
