@@ -2,6 +2,8 @@
 teardown:
 	make predictor_down
 	make mlflow_down
+	make nginx_down
+
 
 #airflow for data pineline
 airflow_up:

@@ -79,9 +79,16 @@
         ```
 
     -   Deploy model predictor
-
+        
+        **Note** Just use one if it, if want to use another, run ```make teardown``` then 
+        - Not using nginx for load balancing
         ```bash
         make predictor_up
+        make predictor_curl
+        ```
+        - Using nginx
+        ```
+        make nginx_up
         make predictor_curl
         ```
 
