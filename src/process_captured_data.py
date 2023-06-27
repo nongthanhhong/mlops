@@ -10,6 +10,7 @@ from utils import *
 import pandas as pd
 from sklearn import metrics
 from sklearn.cluster import DBSCAN, KMeans, MiniBatchKMeans
+import joblib
 from problem_config import ProblemConfig, ProblemConst, get_prob_config
 from data_engineering import DataAnalyzer, FeatureExtractor
 from raw_data_processor import *
@@ -105,12 +106,21 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
         clusterer = MiniBatchKMeans(**model_params["mini"])
         n_cluster = model_params["mini"]["n_clusters"]
 
-    logging.info("Fitting labeled data...")
+
     
-    start_time = time.time()
-    clusterer.fit(labeled_data)
-    end_time = time.time()
-    logging.info(f'Elapsed time: {(end_time - start_time):.2f}')
+
+    logging.info("Fitting labeled data...")
+
+    saved_model = f'./src/model_config/{args.phase_id }/{args.prob_id }/{n_cluster}_{algorithm}_model.pkl'
+    if os.path.isfile(saved_model):
+        clusterer = joblib.load(saved_model)
+    else:
+        start_time = time.time()
+        clusterer.fit(labeled_data)
+        end_time = time.time()
+        joblib.dump(clusterer, saved_model)
+        logging.info(f'Elapsed time: {(end_time - start_time):.2f}')
+    
 
     logging.info('Evaluate cluster model... ')
     evaluator = ClusteringEvaluator(labeled_data, labeled_labels, clusterer, n_cluster)
@@ -141,7 +151,18 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
 def label_captured_data(prob_config: ProblemConfig):
 
-    data = pd.read_parquet(prob_config.train_x_path)
+    eda = DataAnalyzer(prob_config)
+    eda.load_data()
+    eda.preprocess_data(target_col = eda.target_col)
+    if eda.prob_config.prob_id == 'prob-1':
+        eda.prob1_process()
+        # self.feature_selection(dev = 1)
+    else:
+        eda.prob2_process()
+        #  self.feature_selection(dev = 5)
+    training_data = eda.data
+
+    data = training_data.drop([prob_config.target_col], axis=1)
     data_dtype = data.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
     columns = data.columns
     labeled_data = data.to_numpy()
@@ -155,8 +176,8 @@ def label_captured_data(prob_config: ProblemConfig):
     #     print(c==k, v)
     # return
 
-    labels = pd.read_parquet(prob_config.train_y_path)
-    labeled_labels = labels.values.squeeze()
+    labels = pd.DataFrame(training_data[prob_config.target_col])
+    labeled_labels = labels.to_numpy().squeeze()
     labels_dtype = labels.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
 
 
@@ -187,10 +208,10 @@ def label_captured_data(prob_config: ProblemConfig):
         extractor = FeatureExtractor(captured_x, path_save)
         unlabeled_data = extractor.create_new_feature(captured_x)
         
-        unlabeled_data = unlabeled_data[columns].values
+        unlabeled_data = unlabeled_data[columns].to_numpy()
 
     else: 
-        unlabeled_data = captured_x[columns].values
+        unlabeled_data = captured_x[columns].to_numpy()
 
     n_captured = len(unlabeled_data)
     n_samples = len(labeled_data) + n_captured

@@ -566,6 +566,4 @@ class DataAnalyzer:
           self.prob2_process()
           #  self.feature_selection(dev = 5)
 
-        
-        
         self.export_data()
