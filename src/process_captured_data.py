@@ -56,14 +56,11 @@ class ClusteringEvaluator:
 
         # compute contingency matrix (also called confusion matrix)
         start_time = time.time()
-
         contingency_matrix = metrics.cluster.contingency_matrix(self.y, approx_label)
         # calculate purity for each cluster
         purity = np.amax(contingency_matrix, axis=0) / np.sum(contingency_matrix, axis=0)
         end_time = time.time()
         purity_time = end_time - start_time
-
-
 
         start_time = time.time()
         rand_index = metrics.adjusted_rand_score(self.y, approx_label)
@@ -167,7 +164,11 @@ def label_captured_data(prob_config: ProblemConfig):
     for file_path in tqdm(prob_config.captured_data_dir.glob("*.parquet"), ncols=100, desc ="Loading...", unit ="file"):
         captured_data = pd.read_parquet(file_path)
         captured_x = pd.concat([captured_x, captured_data])
-    captured_x = captured_x.drop_duplicates()
+        os.remove(file_path)
+    
+    captured_x.to_parquet(prob_config.captured_data_dir / "total_data.parquet")
+    captured_x = captured_x[captured_x['is_drift']==1].drop_duplicates()
+    
 
     
     logging.info('Preprocessing captured data....')

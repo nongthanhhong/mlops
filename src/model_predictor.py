@@ -45,9 +45,7 @@ class ModelPredictor:
         self.category_index = RawDataProcessor.load_category_index(self.prob_config)
 
         # load model
-        model_uri = os.path.join(
-                                 "models:/", self.config["model_name"], str(self.config["model_version"])
-                                )
+        model_uri = os.path.join("models:/", self.config["model_name"], str(self.config["model_version"]))
         self.model = mlflow.pyfunc.load_model(model_uri)
 
         self.columns_to_keep = self.prob_config.categorical_cols + self.prob_config.numerical_cols
