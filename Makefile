@@ -42,6 +42,10 @@ nginx_up:
 							data/model_config/phase-1/prob-1/model-1.yaml \
 							data/model_config/phase-1/prob-2/model-1.yaml \
 							5040
-
 nginx_down:
 	PORT=5040 docker-compose -f platform/nginx/docker-compose.yml down
+
+nginx_restart:
+	PORT=5040 docker-compose -f platform/nginx/docker-compose.yml stop
+	PORT=5040 docker-compose -f platform/nginx/docker-compose.yml start
+
