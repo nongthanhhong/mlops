@@ -198,8 +198,6 @@ def label_captured_data(prob_config: ProblemConfig):
     captured_x.to_parquet(prob_config.captured_data_dir / "total_data.parquet")
     captured_x = captured_x[captured_x['is_drift']==1].drop_duplicates()
     
-
-    
     logging.info('Preprocessing captured data....')
     if prob_config.prob_id == 'prob-1':
         path_save = "./src/model_config/phase-1/prob-1/sub_values_captured.pkl"
