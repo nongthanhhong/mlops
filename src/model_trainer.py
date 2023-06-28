@@ -100,32 +100,35 @@ class ModelTrainer:
             train_x, train_y = RawDataProcessor.load_capture_data(prob_config)
             train_x = train_x.to_numpy()
             train_y = train_y.to_numpy()
+            train_x, test_x, train_y, test_y = train_test_split(
+                                                            train_x, train_y,
+                                                            test_size=0.2,
+                                                            random_state=42,
+                                                            stratify= train_y)
 
         else:
             logging.info("Use original data")
             train_x, train_y = RawDataProcessor.load_train_data(prob_config)
             train_x = train_x.to_numpy()
             train_y = train_y.to_numpy()
-
-        test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+            test_x, test_y = RawDataProcessor.load_test_data(prob_config)
 
         train_x, val_x, train_y, val_y = train_test_split(
-            train_x, train_y,
-            test_size=0.2,
-            random_state=42,
-            stratify= train_y
-        )
+                                                train_x, train_y,
+                                                test_size=0.125,
+                                                random_state=42,
+                                                stratify= train_y)
 
         logging.info(f"Loaded {len(train_x)} train samples")
 
-        val = int(len(train_x)-len(train_x)*0.2)
+        
 
         counter = Counter(train_y)
         # estimate scale_pos_weight value
         print(f'num 1: {counter[1]} - {100*counter[1]/len(train_y)}%, num 0 {counter[0]} - {100*counter[0]/len(train_y)}%')
         
 
-        print(f' {val} Train samples, {len(train_x)-val} val samples , and {len(test_x)} test samples!')
+        print(f' {len(train_y)} Train samples, {len(val_y)} val samples , and {len(test_y)} test samples!')
 
 
         
