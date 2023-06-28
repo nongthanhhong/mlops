@@ -10,7 +10,7 @@
     },
     "params": {
         "n_estimators" : 5000,
-        "depth": 7,    
+        "depth": 8,    
         "auto_class_weights": "Balanced",
         "learning_rate" : 0.03,
         "eval_metric": "AUC"
