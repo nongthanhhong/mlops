@@ -11,7 +11,7 @@
         "random_state": 69
     },
     "k_means":{
-        "n_clusters": 80000
+        "n_clusters": 100000
     },
     "dbscan":{
         "eps": 3,

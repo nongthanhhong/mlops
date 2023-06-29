@@ -8,6 +8,7 @@ import argparse
 import numpy as np
 from utils import *
 import catboost as cb
+import pandas as pd
 import xgboost as xgb
 from collections import Counter
 from mlflow.models.signature import infer_signature
@@ -97,14 +98,45 @@ class ModelTrainer:
 
         if add_captured_data:
             logging.info("Use captured data")
-            train_x, train_y = RawDataProcessor.load_capture_data(prob_config)
-            train_x = train_x.to_numpy()
-            train_y = train_y.to_numpy()
-            train_x, test_x, train_y, test_y = train_test_split(
-                                                            train_x, train_y,
-                                                            test_size=0.2,
-                                                            random_state=42,
-                                                            stratify= train_y)
+            # train_x, train_y = RawDataProcessor.load_capture_data(prob_config)
+            # train_x = train_x.to_numpy()
+            # train_y = train_y.to_numpy()
+            # train_x, test_x, train_y, test_y = train_test_split(
+            #                                                 train_x, train_y,
+            #                                                 test_size=0.2,
+            #                                                 random_state=42,
+            #                                                 stratify= train_y)
+            
+            train_x, train_y = RawDataProcessor.load_train_data(prob_config)
+            test_x, test_y = RawDataProcessor.load_test_data(prob_config)
+            captured_x, captured_y = RawDataProcessor.load_capture_data(prob_config)
+
+            # Merge the labeled and unlabeled data
+            all_data = pd.concat([train_x, test_x, captured_x], axis=0)
+            all_labels = pd.concat([train_y, test_y, captured_y], axis=0)
+           
+            weights = np.concatenate([np.ones(len(train_y)), np.ones(len(test_y)), np.ones(len(captured_y)) * 2])
+
+            # split data into training, validation, and test sets
+            train_x, test_x, train_y, test_y, train_weights, test_weights = train_test_split(all_data, all_labels, weights, 
+                                                                                             test_size=0.2, 
+                                                                                             random_state=42,
+                                                                                             stratify= all_labels)
+            train_x, val_x, train_y, val_y, train_weights, val_weights = train_test_split(train_x, train_y, train_weights, 
+                                                                                          test_size=0.25, 
+                                                                                          random_state=42,
+                                                                                          stratify= train_y)
+
+            print('Train: old - new: ', np.unique(train_weights, return_counts=True))
+            print('Val: old - new: ', np.unique(val_weights, return_counts=True))
+            print('Test: old - new: ', np.unique(test_weights, return_counts=True))
+
+            # return
+
+            # create Pool objects for each set with weights
+            dtrain = cb.Pool(train_x, label=train_y, weight=train_weights)
+            dval = cb.Pool(val_x, label=val_y, weight=val_weights)
+            dtest = cb.Pool(test_x, label=test_y, weight=test_weights)
 
         else:
             logging.info("Use original data")
@@ -113,14 +145,15 @@ class ModelTrainer:
             train_y = train_y.to_numpy()
             test_x, test_y = RawDataProcessor.load_test_data(prob_config)
 
-        train_x, val_x, train_y, val_y = train_test_split(
-                                                train_x, train_y,
-                                                test_size=0.125,
-                                                random_state=42,
-                                                stratify= train_y)
-
-        logging.info(f"Loaded {len(train_x)} train samples")
-
+            train_x, val_x, train_y, val_y = train_test_split(
+                                                    train_x, train_y,
+                                                    test_size=0.125,
+                                                    random_state=42,
+                                                    stratify= train_y)
+            
+            dtrain = cb.Pool(train_x, label=train_y)
+            dval =  cb.Pool(val_x, label=val_y)
+            dtest =  cb.Pool(test_x, label=test_y)
         
 
         counter = Counter(train_y)
@@ -128,13 +161,11 @@ class ModelTrainer:
         print(f'num 1: {counter[1]} - {100*counter[1]/len(train_y)}%, num 0 {counter[0]} - {100*counter[0]/len(train_y)}%')
         
 
-        print(f' {len(train_y)} Train samples, {len(val_y)} val samples , and {len(test_y)} test samples!')
+        print(f'Loaded {len(train_y)} Train samples, {len(val_y)} val samples , and {len(test_y)} test samples!')
 
 
         
-        dtrain = cb.Pool(train_x, label=train_y)
-        dval =  cb.Pool(val_x, label=val_y)
-        dtest =  cb.Pool(test_x, label=test_y)
+
 
         model = class_model.model
 

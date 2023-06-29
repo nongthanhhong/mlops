@@ -8,6 +8,7 @@ import numpy as np
 from tqdm import tqdm
 from utils import *
 import pandas as pd
+from scipy.spatial.distance import cdist
 from sklearn import metrics
 from sklearn.cluster import DBSCAN, KMeans, MiniBatchKMeans
 import joblib
@@ -138,11 +139,39 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
     for cluster in range(n_cluster):
         mask = clusterer.labels_ == cluster
         if len(labeled_labels[mask]) == 0:
-            # If no data points in the cluster, assign a default label (e.g., 0)
-            new_labels.append(1)
+            new_labels.append(-1)
             continue
         most_common_label = np.bincount(labeled_labels[mask]).argmax()
         new_labels.append(most_common_label)
+    
+    # Get the centroids of each cluster
+    centroids = clusterer.cluster_centers_
+    # Set the batch size
+    batch_size = 1000
+    # Initialize an array to store the nearest cluster for each cluster
+    nearest_clusters = np.empty(centroids.shape[0], dtype=int)
+    # Calculate the distances between the centroids in batches
+    for i in range(0, centroids.shape[0], batch_size):
+        # Get the current batch of centroids
+        batch = centroids[i:i+batch_size]
+        
+        # Calculate the distances between the current batch of centroids and all the other centroids
+        distances = cdist(batch, centroids)
+        
+        # Set the diagonal to infinity to exclude the distance between a centroid and itself
+        np.fill_diagonal(distances, np.inf)
+        
+        # Find the nearest cluster for each centroid in the current batch
+        nearest_clusters[i:i+batch_size] = np.argmin(distances, axis=1)
+
+    # print(f"The nearest clusters are: {nearest_clusters}")
+
+    for cluster in range(n_cluster):
+        if new_labels[cluster] == -1:
+            # Find the nearest cluster to the first cluster (cluster 0)
+            # Asign label by the label of nearest cluster
+            new_labels[cluster]  = new_labels[nearest_clusters[cluster]]
+
 
     propagated_labels = [new_labels[c] for c in kmeans_clusters]
 
@@ -150,7 +179,7 @@ def propagate_labels(labeled_data, labeled_labels, unlabeled_data):
     # Merge the labeled and unlabeled data
     data = np.concatenate((labeled_data, unlabeled_data), axis=0)
 
-    return data, all_labels
+    return data, all_labels, unlabeled_data, propagated_labels
 
 def label_captured_data(prob_config: ProblemConfig):
 
@@ -227,11 +256,11 @@ def label_captured_data(prob_config: ProblemConfig):
     logging.info("Initialize and fit the clustering model")
 
    
-    data, approx_label = propagate_labels(labeled_data, labeled_labels, unlabeled_data)
+    total_data, total_label, captured_data, approx_label = propagate_labels(labeled_data, labeled_labels, unlabeled_data)
     # print(np.unique(approx_label))
 
     logging.info("Saving new data...")
-    captured_x = pd.DataFrame(data, columns = columns)
+    captured_x = pd.DataFrame(captured_data, columns = columns)
 
     for column in captured_x.columns:
         captured_x[column] = captured_x[column].astype(data_dtype[column])
@@ -243,7 +272,7 @@ def label_captured_data(prob_config: ProblemConfig):
     captured_x.to_parquet(prob_config.captured_x_path, index=False)
     approx_label_df.to_parquet(prob_config.uncertain_y_path, index=False)
     print(captured_x.info(), '\n', approx_label_df.info(), "\n", np.unique(approx_label_df, return_counts=True))
-    logging.info(f"after process have {len(data)}  train + captured")
+    logging.info(f"----- After process have {len(captured_x)} labeled captured data ------")
     logging.info('Done!')
 
     # print(len(np.unique(pd.concat([captured_x['feature4'], captured_x['feature7']]))))

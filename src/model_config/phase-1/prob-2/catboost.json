@@ -9,12 +9,12 @@
         "early_stopping_rounds": 100
     },
     "params": {
-        "n_estimators" : 5000,
-        "depth": 7,
+        "n_estimators" : 20000,
+        "depth": 5,
         "auto_class_weights": "Balanced",
-        "learning_rate" : 0.02,
+        "learning_rate" : 0.01,
         "subsample" : 0.4,
-        "l2_leaf_reg": 8,
+        "l2_leaf_reg": 9,
         "eval_metric": "AUC"
     }
 }
