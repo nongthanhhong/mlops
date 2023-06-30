@@ -4,10 +4,10 @@ services:
     image: nginx:latest
     restart: on-failure
     ports:
-      - ${PORT}:80
+      - 5040:80
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
+
   mlflow:
     build:
       context: mlflow/
