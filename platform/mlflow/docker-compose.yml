@@ -11,11 +11,3 @@ services:
       - "5000:5000"
     volumes:
       - ./run_env/data:/mlflow
-
-  nginx:
-    image: nginx:latest
-    restart: on-failure
-    ports:
-      - 5040:80
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
