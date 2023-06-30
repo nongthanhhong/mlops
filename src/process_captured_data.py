@@ -178,6 +178,50 @@ class ClusteringEvaluator:
 
 #     return data, all_labels, unlabeled_data, propagated_labels
 
+def asign_label(clusterer, n_cluster, labeled_labels):
+    new_labels = []
+    
+    for cluster in range(n_cluster):
+        mask = clusterer.labels_ == cluster
+        if len(labeled_labels[mask]) == 0:
+            new_labels.append(-1)
+            continue
+        most_common_label = np.bincount(labeled_labels[mask]).argmax()
+        new_labels.append(most_common_label)
+    
+    # Get the centroids of each cluster
+    centroids = clusterer.cluster_centers_
+    # Set the batch size
+    batch_size = 1000
+    # Initialize an array to store the nearest cluster for each cluster
+    nearest_clusters = np.empty(centroids.shape[0], dtype=int)
+    # Calculate the distances between the centroids in batches
+    for i in range(0, centroids.shape[0], batch_size):
+        # Get the current batch of centroids
+        batch = centroids[i:i+batch_size]
+        
+        # Calculate the distances between the current batch of centroids and all the other centroids
+        distances = cdist(batch, centroids)
+        
+        # Set the diagonal to infinity to exclude the distance between a centroid and itself
+        np.fill_diagonal(distances, np.inf)
+        
+        # Find the nearest cluster for each centroid in the current batch
+        nearest_clusters[i:i+batch_size] = np.argmin(distances, axis=1)
+
+    # print(f"The nearest clusters are: {nearest_clusters}")
+
+    for cluster in tqdm(range(n_cluster), ncols=100, desc="label_: "):
+        if new_labels[cluster] == -1:
+            # Find the nearest cluster to the first cluster (cluster 0)
+            # Asign label by the label of nearest cluster
+            if new_labels[nearest_clusters[cluster]] != -1:
+                new_labels[cluster]  = new_labels[nearest_clusters[cluster]]
+            else:
+                new_labels[cluster]  = 1
+
+
+    return new_labels
 
 def prob1_propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
@@ -223,49 +267,14 @@ def prob1_propagate_labels(labeled_data, labeled_labels, unlabeled_data):
 
     # Step 3: Propagate labels to the rest of the data
     logging.info("Labeling new data...")
-    new_labels = []
-    kmeans_clusters = clusterer.predict(unlabeled_data)
-    for cluster in range(n_cluster):
-        mask = clusterer.labels_ == cluster
-        if len(labeled_labels[mask]) == 0:
-            new_labels.append(-1)
-            continue
-        most_common_label = np.bincount(labeled_labels[mask]).argmax()
-        new_labels.append(most_common_label)
     
-    # Get the centroids of each cluster
-    centroids = clusterer.cluster_centers_
-    # Set the batch size
-    batch_size = 5000
-    # Initialize an array to store the nearest cluster for each cluster
-    nearest_clusters = np.empty(centroids.shape[0], dtype=int)
-    # Calculate the distances between the centroids in batches
-    for i in range(0, centroids.shape[0], batch_size):
-        # Get the current batch of centroids
-        batch = centroids[i:i+batch_size]
-        
-        # Calculate the distances between the current batch of centroids and all the other centroids
-        distances = cdist(batch, centroids)
-        
-        # Set the diagonal to infinity to exclude the distance between a centroid and itself
-        np.fill_diagonal(distances, np.inf)
-        
-        # Find the nearest cluster for each centroid in the current batch
-        nearest_clusters[i:i+batch_size] = np.argmin(distances, axis=1)
-
-    # print(f"The nearest clusters are: {nearest_clusters}")
-
-    for cluster in range(n_cluster):
-        if new_labels[cluster] == -1:
-            # Find the nearest cluster to the first cluster (cluster 0)
-            # Asign label by the label of nearest cluster
-            new_labels[cluster]  = new_labels[nearest_clusters[cluster]]
-
-
+    kmeans_clusters = clusterer.predict(unlabeled_data)
+    new_labels = asign_label(clusterer, n_cluster, labeled_labels)
     propagated_labels = [new_labels[c] for c in kmeans_clusters]
 
-    all_labels = np.concatenate((labeled_labels, propagated_labels), axis=0)
+
     # Merge the labeled and unlabeled data
+    all_labels = np.concatenate((labeled_labels, propagated_labels), axis=0)
     data = np.concatenate((labeled_data, unlabeled_data), axis=0)
 
     return data, all_labels, unlabeled_data, propagated_labels
