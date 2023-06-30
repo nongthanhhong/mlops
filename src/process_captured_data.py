@@ -261,9 +261,9 @@ def prob1_propagate_labels(labeled_data, labeled_labels, unlabeled_data):
         logging.info(f'Elapsed time: {(end_time - start_time):.2f}')
     
 
-    logging.info('Evaluate cluster model... ')
-    evaluator = ClusteringEvaluator(X=labeled_data, y=labeled_labels, model=clusterer, n_cluster=n_cluster)
-    evaluator.evaluate_clustering()
+    # logging.info('Evaluate cluster model... ')
+    # evaluator = ClusteringEvaluator(X=labeled_data, y=labeled_labels, model=clusterer, n_cluster=n_cluster)
+    # evaluator.evaluate_clustering()
 
     # Step 3: Propagate labels to the rest of the data
     logging.info("Labeling new data...")

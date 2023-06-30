@@ -1,13 +1,5 @@
 version: "3"
 services:
-  nginx:
-    image: nginx:latest
-    restart: on-failure
-    ports:
-      - 5040:80
-    volumes:
-      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
-
   mlflow:
     build:
       context: mlflow/
@@ -16,6 +8,6 @@ services:
       - -c
       - "mlflow server --backend-store-uri sqlite:////mlflow/mlflow.db --serve-artifacts --host 0.0.0.0 --port 5000"
     ports:
-      - "5000:5000"
+      - "5040:5000"
     volumes:
       - ./run_env/data:/mlflow
