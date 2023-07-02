@@ -79,6 +79,7 @@ class ModelPredictor:
                                                         category_index=self.category_index, 
                                                             raw_config = self.prob_config.raw_feature_config_path)
 
+            new_feature_df = self.eda.preprocess_data(input_data=new_feature_df)
             new_feature = self.extractor.create_new_feature(feature_df)
             new_feature_df = new_feature[self.columns_to_keep]
 
@@ -88,10 +89,11 @@ class ModelPredictor:
                                             raw_df=raw_df,
                                                 categorical_cols=self.prob_config.categorical_cols,
                                                     category_index=self.category_index)
-
+            
+            new_feature_df = self.eda.preprocess_data(input_data=new_feature_df)
             new_feature_df = feature_df[self.columns_to_keep]
 
-        new_feature_df = self.eda.preprocess_data(input_data=new_feature_df)
+        
 
         # save request data for improving models
         ModelPredictor.save_request_data(
