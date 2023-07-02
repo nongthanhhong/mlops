@@ -325,7 +325,7 @@ def label_captured_data(prob_config: ProblemConfig):
     captured_x = captured_x.drop_duplicates()
     captured_x.to_parquet(prob_config.captured_data_dir / "total_data.parquet")
 
-    captured_x = captured_x[captured_x['is_drift']==1] #just use drift
+    # captured_x = captured_x[captured_x['is_drift']==1] #just use drift
     
     logging.info('Preprocessing captured data....')
     if prob_config.prob_id == 'prob-1':
