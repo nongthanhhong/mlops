@@ -69,7 +69,7 @@ class ModelPredictor:
         start_time = time.time()
 
         # preprocess
-        raw_df = self.eda.preprocess_data(input_data = pd.DataFrame(data.rows, columns=data.columns))
+        raw_df = input_data = pd.DataFrame(data.rows, columns=data.columns)
 
         if self.prob_config.prob_id == 'prob-1':
             
@@ -90,6 +90,8 @@ class ModelPredictor:
                                                     category_index=self.category_index)
 
             new_feature_df = feature_df[self.columns_to_keep]
+
+        new_feature_df = self.eda.preprocess_data(input_data=new_feature_df)
 
         # save request data for improving models
         ModelPredictor.save_request_data(

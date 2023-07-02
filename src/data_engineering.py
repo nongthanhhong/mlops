@@ -386,7 +386,9 @@ class DataAnalyzer:
           df = input_data
         else:
           df = self.data
-        dtype = df.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
+        # dtype = df.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
+        with open(self.prob_config.train_data_path/'types.json', 'r') as f:
+            dtype = json.load(f)
         data = df.copy()
 
         # Fill missing values
