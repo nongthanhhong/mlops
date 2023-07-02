@@ -416,10 +416,11 @@ class DataAnalyzer:
 
         # Drop rows with the wrong format in each column
         for column in data.columns:
-            data[column] = pd.to_numeric(data[column], errors='coerce')
-            if input_data is None: 
-              data.dropna(inplace=True)
-            data[column] = data[column].astype(dtype[column])
+            if column in dtype.keys():
+              data[column] = pd.to_numeric(data[column], errors='coerce')
+              if input_data is None: 
+                data.dropna(inplace=True)
+              data[column] = data[column].astype(dtype[column])
 
 
         return data 
