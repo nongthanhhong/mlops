@@ -391,23 +391,20 @@ class DataAnalyzer:
             dtype = json.load(f)
         data = df.copy()
 
-        data = data.fillna(method='ffill')
-        data = data.fillna(method='bfill')
-        data = data.fillna(0)
-        if input_data is not None:
-           data = data.fillna(method='ffill')
-           data = data.fillna(method='bfill')
-           data = data.fillna(0)
+        
+       
+        # Fill missing values
+        if fill_value == 'mean':
+            data = data.fillna(data.mean())
+        elif fill_value == 'median':
+            data = data.fillna(data.median())
+        elif isinstance(fill_value, (int, float)):
+            data = data.fillna(fill_value)
         else:
-          # Fill missing values
-          if fill_value == 'mean':
-              data = data.fillna(data.mean())
-          elif fill_value == 'median':
-              data = data.fillna(data.median())
-          elif isinstance(fill_value, (int, float)):
-              data = data.fillna(fill_value)
-          else:
-              raise ValueError(f"Invalid fill value '{fill_value}'")
+            data = data.fillna(method='ffill')
+            data = data.fillna(method='bfill')
+            data = data.fillna(0)
+            # raise ValueError(f"Invalid fill value '{fill_value}'")
 
         
         # Remove duplicated rows

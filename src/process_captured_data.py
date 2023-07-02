@@ -325,10 +325,7 @@ def label_captured_data(prob_config: ProblemConfig):
         os.remove(file_path)
 
     captured_x.to_parquet(prob_config.captured_data_dir / "total_data.parquet")
-    captured_x = eda.preprocess_data(input_data=captured_x)
-
-    
-    
+    captured_x = eda.preprocess_data(input_data=captured_x)    
 
     
     logging.info('Preprocessing captured data....')
