@@ -365,11 +365,11 @@ def label_captured_data(prob_config: ProblemConfig):
     # else:
     #     total_data, total_label, captured_data, approx_label = prob2_propagate_labels(labeled_data, labeled_labels, unlabeled_data)
     
-    total_data, total_label, captured_data, approx_label = prob1_propagate_labels(labeled_data, labeled_labels, unlabeled_data)
+    _, _, _, approx_label = prob1_propagate_labels(labeled_data[columns], labeled_labels, unlabeled_data[columns])
 
 
     logging.info("Saving new data...")
-    captured_x = pd.DataFrame(captured_data, columns = columns)
+    captured_x = pd.DataFrame(unlabeled_data, columns = columns)
 
     for column in captured_x.columns:
         captured_x[column] = captured_x[column].astype(data_dtype[column])
