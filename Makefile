@@ -14,8 +14,8 @@ mlflow_up:
 	PORT=5040 docker-compose -f platform/mlflow/docker-compose.yml up -d
 
 mlflow_restart:
-	PORT=5040 docker-compose -f platform/mlflow/docker-compose.yml stop
-	PORT=5000 docker-compose -f platform/mlflow/docker-compose.yml start
+	PORT=5040 docker-compose -f platform/mlflow/docker-compose.yml down
+	PORT=5000 docker-compose -f platform/mlflow/docker-compose.yml up -d
 
 mlflow_down:
 	PORT=5040 docker-compose -f platform/mlflow/docker-compose.yml down
