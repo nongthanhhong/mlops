@@ -336,7 +336,9 @@ def label_captured_data(prob_config: ProblemConfig):
             os.remove(path_save)
 
         extractor = FeatureExtractor(captured_x, path_save)
+        logging.info(captured_x.columns)
         captured_x = extractor.create_new_feature(captured_x)
+        logging.info(captured_x.columns)
 
         unlabeled_data = captured_x[captured_x['is_drift']==1] #just use drift
         
