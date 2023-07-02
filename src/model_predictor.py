@@ -97,6 +97,7 @@ class ModelPredictor:
         ModelPredictor.save_request_data(
             feature_df, self.prob_config.captured_data_dir, data.id
         )
+        logging.info(f'Size of input: {len(new_feature_df)}')
         
         # logging.info(new_feature_df)
         # prediction = self.model.predict(feature_df)
