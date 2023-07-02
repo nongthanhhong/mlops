@@ -322,7 +322,7 @@ def label_captured_data(prob_config: ProblemConfig):
         captured_x = pd.concat([captured_x, captured_data])
         os.remove(file_path)
     
-    captured_x = captured_x.drop_duplicates()
+    captured_x = eda.preprocess_data(input_data=captured_x)
     captured_x.to_parquet(prob_config.captured_data_dir / "total_data.parquet")
 
     # captured_x = captured_x[captured_x['is_drift']==1] #just use drift
