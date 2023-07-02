@@ -115,7 +115,8 @@ class ModelTrainer:
             all_data = pd.concat([train_x, test_x, captured_x], axis=0)
             all_labels = pd.concat([train_y, test_y, captured_y], axis=0)
            
-            weights = np.concatenate([np.ones(len(train_y)), np.ones(len(test_y)), np.ones(len(captured_y)) * 5])
+            weight = int( len(train_y) / len(captured_y) ) if len(train_y)>len(captured_y) else 1
+            weights = np.concatenate([np.ones(len(train_y)), np.ones(len(test_y)), np.ones(len(captured_y)) * weight])
 
             # split data into training, validation, and test sets
             train_x, test_x, train_y, test_y, train_weights, test_weights = train_test_split(all_data, all_labels, weights, 
