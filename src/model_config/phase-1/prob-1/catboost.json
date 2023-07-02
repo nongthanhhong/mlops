@@ -9,7 +9,7 @@
         "early_stopping_rounds": 50
     },
     "params": {
-        "n_estimators" : 20000,
+        "n_estimators" : 5000,
         "depth": 5,    
         "auto_class_weights": "Balanced",
         "learning_rate" : 0.1,
