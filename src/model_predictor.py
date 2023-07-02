@@ -36,6 +36,7 @@ class ModelPredictor:
         logging.info(f"model-config: {self.config}")
 
         mlflow.set_tracking_uri(AppConfig.MLFLOW_TRACKING_URI)
+        # mlflow.pyfunc.get_model_dependencies(AppConfig.MLFLOW_TRACKING_URI)
 
         self.prob_config = create_prob_config(
             self.config["phase_id"], self.config["prob_id"]
