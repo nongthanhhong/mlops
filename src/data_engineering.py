@@ -270,23 +270,23 @@ class FeatureExtractor:
 
   def avg_hour_item_feature(self, row):
     
-    query = str(int(row[self.hour])) + '_' + str(int(row[self.item]))
+    query = str(row[self.hour]) + '_' + str(row[self.item])
     return abs(row[self.amount] -  self.sub_values_dicts.avg_hour_item.get(query, 0))
 
   def percent_item_job_feature(self, row):
 
-    query = str(int(row[self.item])) + '_' + str(int(row[self.job]))
+    query = str(row[self.item]) + '_' + str(row[self.job])
 
     return self.sub_values_dicts.item_job.get(query, 80)
 
   def percent_item_hour_feature(self, row):
 
-    query = str(int(row[self.hour])) + '_' + str(int(row[self.item]))
+    query = str(row[self.hour]) + '_' + str(row[self.item])
     return self.sub_values_dicts.item_hour.get(query, 80)
 
   def percent_job_hour_feature(self, row):
 
-    query = str(int(row[self.hour])) + '_' + str(int(row[self.job]))
+    query = str(row[self.hour]) + '_' + str(row[self.job])
 
     return self.sub_values_dicts.job_hour.get(query, 80)
 

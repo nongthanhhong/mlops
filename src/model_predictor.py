@@ -80,6 +80,12 @@ class ModelPredictor:
                                                             raw_config = self.prob_config.raw_feature_config_path)
 
             new_feature_df = self.eda.preprocess_data(input_data=new_feature_df)
+            # save request data for improving models
+            ModelPredictor.save_request_data(
+                feature_df, self.prob_config.captured_data_dir, data.id
+            )
+            logging.info(f'Size of input: {len(new_feature_df)}')
+
             new_feature = self.extractor.create_new_feature(feature_df)
             new_feature_df = new_feature[self.columns_to_keep]
 
@@ -91,15 +97,17 @@ class ModelPredictor:
                                                     category_index=self.category_index)
             
             new_feature_df = self.eda.preprocess_data(input_data=new_feature_df)
+            # save request data for improving models
+            ModelPredictor.save_request_data(
+                feature_df, self.prob_config.captured_data_dir, data.id
+            )
+            logging.info(f'Size of input: {len(new_feature_df)}')
+            
             new_feature_df = feature_df[self.columns_to_keep]
 
         
 
-        # save request data for improving models
-        ModelPredictor.save_request_data(
-            feature_df, self.prob_config.captured_data_dir, data.id
-        )
-        logging.info(f'Size of input: {len(new_feature_df)}')
+        
         
         # logging.info(new_feature_df)
         # prediction = self.model.predict(feature_df)
