@@ -365,7 +365,7 @@ def label_captured_data(prob_config: ProblemConfig):
     # else:
     #     total_data, total_label, captured_data, approx_label = prob2_propagate_labels(labeled_data, labeled_labels, unlabeled_data)
     
-    _, _, _, approx_label = prob1_propagate_labels(labeled_data[[columns]], labeled_labels, unlabeled_data[[columns]])
+    _, _, _, approx_label = prob1_propagate_labels(labeled_data[:16], labeled_labels, unlabeled_data[:16])
 
 
     logging.info("Saving new data...")
