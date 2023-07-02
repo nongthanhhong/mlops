@@ -391,7 +391,9 @@ class DataAnalyzer:
             dtype = json.load(f)
         data = df.copy()
 
-
+        data = data.fillna(method='ffill')
+        data = data.fillna(method='bfill')
+        data = data.fillna(0)
         if input_data is not None:
            data = data.fillna(method='ffill')
            data = data.fillna(method='bfill')
