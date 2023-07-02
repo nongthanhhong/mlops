@@ -251,6 +251,7 @@ def prob1_propagate_labels(labeled_data, labeled_labels, unlabeled_data):
     if os.path.isfile(saved_model):
         logging.info("Oh existed trained model, nice!")
         clusterer = joblib.load(saved_model)
+        n_features = clusterer.cluster_centers_.shape[1]
     else:
         logging.info("Ops, waiting for happiness :))")
 
@@ -259,16 +260,17 @@ def prob1_propagate_labels(labeled_data, labeled_labels, unlabeled_data):
         end_time = time.time()
         joblib.dump(clusterer, saved_model)
         logging.info(f'Elapsed time: {(end_time - start_time):.2f}')
+        n_features = clusterer.cluster_centers_.shape[1]
     
 
     # logging.info('Evaluate cluster model... ')
-    # evaluator = ClusteringEvaluator(X=labeled_data, y=labeled_labels, model=clusterer, n_cluster=n_cluster)
+    # evaluator = ClusteringEvaluator(X=labeled_data[:, :n_features], y=labeled_labels, model=clusterer[:, :n_features], n_cluster=n_cluster)
     # evaluator.evaluate_clustering()
 
     # Step 3: Propagate labels to the rest of the data
     logging.info("Labeling new data...")
     
-    kmeans_clusters = clusterer.predict(unlabeled_data)
+    kmeans_clusters = clusterer.predict(unlabeled_data[:, :n_features])
     new_labels = asign_label(clusterer, n_cluster, labeled_labels)
     propagated_labels = [new_labels[c] for c in kmeans_clusters]
 
@@ -365,7 +367,7 @@ def label_captured_data(prob_config: ProblemConfig):
     # else:
     #     total_data, total_label, captured_data, approx_label = prob2_propagate_labels(labeled_data, labeled_labels, unlabeled_data)
     
-    _, _, _, approx_label = prob1_propagate_labels(labeled_data[:,:16], labeled_labels, unlabeled_data[:, :16])
+    _, _, _, approx_label = prob1_propagate_labels(labeled_data, labeled_labels, unlabeled_data)
 
 
     logging.info("Saving new data...")
