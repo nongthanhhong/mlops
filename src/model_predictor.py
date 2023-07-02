@@ -69,7 +69,7 @@ class ModelPredictor:
         start_time = time.time()
 
         # preprocess
-        raw_df = input_data = pd.DataFrame(data.rows, columns=data.columns)
+        raw_df = pd.DataFrame(data.rows, columns=data.columns)
 
         if self.prob_config.prob_id == 'prob-1':
             
