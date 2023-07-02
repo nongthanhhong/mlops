@@ -304,11 +304,11 @@ class FeatureExtractor:
 
     # data['distance'] = data.apply(self.distance_feature, axis=1)
 
-    data['avg_item'] = data.apply(self.avg_item_feature, axis=1)
+    # data['avg_item'] = data.apply(self.avg_item_feature, axis=1)
 
     # data['avg_hour'] = data.apply(self.avg_hour_feature, axis=1)
 
-    data['avg_hour_item'] = data.apply(self.avg_hour_item_feature, axis=1)
+    # data['avg_hour_item'] = data.apply(self.avg_hour_item_feature, axis=1)
 
     # data['percent_item_job'] = data.apply(self.percent_item_job_feature, axis=1)
 
@@ -316,7 +316,7 @@ class FeatureExtractor:
 
     # data['percent_job_hour'] = data.apply(self.percent_job_hour_feature, axis=1)
 
-    data['percent_hour_fraud'] = data.apply(self.percent_hour_fraud_feature, axis=1)
+    # data['percent_hour_fraud'] = data.apply(self.percent_hour_fraud_feature, axis=1)
 
     # data['percent_job_fraud'] = data.apply(self.percent_job_fraud_feature, axis=1)
 
