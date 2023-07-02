@@ -12,7 +12,7 @@
         "n_estimators" : 20000,
         "depth": 10,
         "auto_class_weights": "Balanced",
-        "learning_rate" : 0.005,
+        "learning_rate" : 0.02,
         "subsample" : 0.4,
         "l2_leaf_reg": 8,
         "eval_metric": "AUC"
