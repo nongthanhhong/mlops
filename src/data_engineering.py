@@ -380,9 +380,12 @@ class DataAnalyzer:
 
         self.target_col = self.prob_config.target_col
     
-    def preprocess_data(self, target_col = None, fill_value='mean', scaler=None, method='z-score', threshold=3):
-
-        df = self.data
+    def preprocess_data(self, target_col = None, fill_value='mean', scaler=None, method='z-score', threshold=3, input_data = None):
+        
+        if input_data is not None: 
+          df = input_data
+        else:
+          df = self.data
         dtype = df.dtypes.to_frame('dtypes').reset_index().set_index('index')['dtypes'].astype(str).to_dict()
         data = df.copy()
 
@@ -397,7 +400,8 @@ class DataAnalyzer:
             raise ValueError(f"Invalid fill value '{fill_value}'")
 
         # Remove duplicated rows
-        data = data.drop_duplicates()
+        if input_data is None: 
+         data = data.drop_duplicates()
 
         # Scale the data
         if scaler is not None:
@@ -411,7 +415,8 @@ class DataAnalyzer:
         # Drop rows with the wrong format in each column
         for column in data.columns:
             data[column] = pd.to_numeric(data[column], errors='coerce')
-            data.dropna(inplace=True)
+            if input_data is None: 
+              data.dropna(inplace=True)
             data[column] = data[column].astype(dtype[column])
 
 

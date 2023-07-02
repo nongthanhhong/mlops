@@ -13,7 +13,7 @@ import pandas as pd
 from pydantic import BaseModel
 from fastapi import FastAPI, Request
 from pandas.util import hash_pandas_object
-from data_engineering import FeatureExtractor
+from data_engineering import FeatureExtractor, DataAnalyzer
 
 from problem_config import ProblemConst, create_prob_config, load_feature_configs_dict
 from raw_data_processor import RawDataProcessor
@@ -56,6 +56,8 @@ class ModelPredictor:
             path_save = "./src/model_config/phase-1/prob-1/sub_values_captured.pkl"
 
         self.extractor = FeatureExtractor(None, path_save)
+        
+        self.eda =  DataAnalyzer(self.prob_config)
 
     def detect_drift(self, feature_df) -> int:
         # watch drift between coming requests and training data
@@ -66,7 +68,7 @@ class ModelPredictor:
         start_time = time.time()
 
         # preprocess
-        raw_df = pd.DataFrame(data.rows, columns=data.columns)
+        raw_df = self.eda.preprocess_data(input_data = pd.DataFrame(data.rows, columns=data.columns))
 
         if self.prob_config.prob_id == 'prob-1':
             
@@ -93,7 +95,7 @@ class ModelPredictor:
             feature_df, self.prob_config.captured_data_dir, data.id
         )
         
-        
+        # logging.info(new_feature_df)
         # prediction = self.model.predict(feature_df)
         
         prediction = self.model.predict(new_feature_df)

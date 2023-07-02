@@ -10,11 +10,11 @@
     },
     "params": {
         "n_estimators" : 20000,
-        "depth": 7,
+        "depth": 10,
         "auto_class_weights": "Balanced",
-        "learning_rate" : 0.03,
+        "learning_rate" : 0.005,
         "subsample" : 0.4,
-        "l2_leaf_reg": 9,
+        "l2_leaf_reg": 8,
         "eval_metric": "AUC"
     }
 }
