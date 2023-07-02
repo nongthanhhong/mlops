@@ -322,7 +322,7 @@ def label_captured_data(prob_config: ProblemConfig):
         captured_x = pd.concat([captured_x, captured_data])
         os.remove(file_path)
     
-    captured_x = eda.preprocess_data(input_data=captured_x)
+    
     captured_x.to_parquet(prob_config.captured_data_dir / "total_data.parquet")
 
     
@@ -337,13 +337,15 @@ def label_captured_data(prob_config: ProblemConfig):
         extractor = FeatureExtractor(captured_x, path_save)
         captured_x = extractor.create_new_feature(captured_x)
 
-        unlabeled_data = captured_x[captured_x['is_drift']==1] #just use drift
+        captured_x = captured_x[captured_x['is_drift']==1] #just use drift
+        unlabeled_data = eda.preprocess_data(input_data=captured_x)
         
         unlabeled_data = unlabeled_data[columns].to_numpy()
 
     else: 
         
-        unlabeled_data = captured_x[captured_x['is_drift']==1] #just use drift
+        captured_x = captured_x[captured_x['is_drift']==1] #just use drift
+        unlabeled_data = eda.preprocess_data(input_data=captured_x)
         unlabeled_data = captured_x[columns].to_numpy()
 
     n_captured = len(unlabeled_data)
