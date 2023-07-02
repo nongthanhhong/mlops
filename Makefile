@@ -11,10 +11,15 @@ airflow_up:
 
 # mlflow
 mlflow_up:
-	docker-compose -f platform/mlflow/docker-compose.yml up -d
+	PORT=5040 docker-compose -f platform/mlflow/docker-compose.yml up -d
+
+mlflow_restart:
+	PORT=5040 docker-compose -f platform/mlflow/docker-compose.yml stop
+	PORT=5000 docker-compose -f platform/mlflow/docker-compose.yml start
 
 mlflow_down:
-	docker-compose -f platform/mlflow/docker-compose.yml down
+	PORT=5040 docker-compose -f platform/mlflow/docker-compose.yml down
+	PORT=5000 docker-compose -f platform/mlflow/docker-compose.yml down
 
 # predictor
 predictor_up:
@@ -561,6 +566,10 @@ predictor_curl:
 	curl -X POST http://localhost:5040/phase-1/prob-1/predict -H "Content-Type: application/json" -d @data/curl/phase-1/prob-1/payload-2.json
 	curl -X POST http://localhost:5040/phase-1/prob-1/predict -H "Content-Type: application/json" -d @data/curl/phase-1/prob-1/payload-1.json
 	curl -X POST http://localhost:5040/phase-1/prob-1/predict -H "Content-Type: application/json" -d @data/curl/phase-1/prob-1/payload-2.json
+
+
+
+
 
 # using nginx for load balancing
 nginx_up:

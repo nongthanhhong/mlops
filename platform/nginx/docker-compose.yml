@@ -1,18 +1,5 @@
 version: "3.7"
 services:
-  mlflow:
-    build:
-      context: ../mlflow/mlflow/
-      
-    command:
-      - bash
-      - -c
-      - "mlflow server --backend-store-uri sqlite:////mlflow/mlflow.db --serve-artifacts --host 0.0.0.0 --port 5000"
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./run_env/data:/mlflow
-
   nginx:
     image: nginx:latest
     restart: on-failure
