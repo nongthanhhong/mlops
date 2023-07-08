@@ -80,32 +80,10 @@ class ModelTrainer:
             f"{prob_config.phase_id}_{prob_config.prob_id}_{class_model.EXPERIMENT_NAME}"
         )
 
-        # if prob_config.prob_id == 'prob-1':
-        #     # load train data
-        #     train_x, train_y = RawDataProcessor.load_train_data(prob_config)
-        #     x_vec = np.array(train_x["node_embedding"].tolist())
-        #     x_other = train_x.drop(columns=["node_embedding"])
-        #     train_x = np.concatenate((x_other, x_vec), axis=1)
-        #     train_y = train_y.to_numpy()
 
-        #     test_x, test_y = RawDataProcessor.load_test_data(prob_config)
-        #     x_vec = np.array(test_x["node_embedding"].tolist())
-        #     x_other = test_x.drop(columns=["node_embedding"])
-        #     test_x = np.concatenate((x_other, x_vec), axis=1)
-        # else:
-            # load train data
-        
-
+        # load train data
         if add_captured_data:
             logging.info("Use captured data")
-            # train_x, train_y = RawDataProcessor.load_capture_data(prob_config)
-            # train_x = train_x.to_numpy()
-            # train_y = train_y.to_numpy()
-            # train_x, test_x, train_y, test_y = train_test_split(
-            #                                                 train_x, train_y,
-            #                                                 test_size=0.2,
-            #                                                 random_state=42,
-            #                                                 stratify= train_y)
             
             train_x, train_y = RawDataProcessor.load_train_data(prob_config)
             test_x, test_y = RawDataProcessor.load_test_data(prob_config)

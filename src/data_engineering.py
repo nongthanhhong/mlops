@@ -48,7 +48,6 @@ def remove_files_in_folder(folder_path):
             print(f"Error deleting {file_path}: {e}")
             pass
 
-
 class SubValues:
   '''
   This class define sub values for create new features
@@ -160,7 +159,6 @@ class Calculator:
 
     return result_dict
 
-
 def calculate_sub_values(extractor):
 
   data = extractor.data
@@ -210,7 +208,6 @@ def calculate_sub_values(extractor):
 
   return sub_values
 
-
 def load_sub_values(path_file):
 
   # Load the instance from the file
@@ -218,8 +215,6 @@ def load_sub_values(path_file):
       sub_values = pickle.load(f)
 
   return sub_values
-
-
 
 def get_sub_values(extractor):
 
@@ -229,7 +224,6 @@ def get_sub_values(extractor):
     sub_values_dicts = calculate_sub_values(extractor)
 
   return sub_values_dicts
-
 
 class FeatureExtractor:
   '''
@@ -323,8 +317,6 @@ class FeatureExtractor:
     self.new_data = data
     return data
   
-
-
 class DataAnalyzer:
     """
     A class for performing exploratory data analysis on tabular data for machine learning.

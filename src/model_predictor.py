@@ -80,6 +80,7 @@ class ModelPredictor:
                                                             raw_config = self.prob_config.raw_feature_config_path)
 
             new_feature_df = self.eda.preprocess_data(input_data=feature_df)
+            new_feature_df = new_feature_df.fillna(0)
             # save request data for improving models
             ModelPredictor.save_request_data(
                 feature_df, self.prob_config.captured_data_dir, data.id

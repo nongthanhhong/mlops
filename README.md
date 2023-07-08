@@ -10,7 +10,7 @@
     make mlflow_up
     ```
 
-2.  Train model
+2.  Prepare data
 
     -   Download data, `./data/raw_data` dir should look like
 
@@ -43,7 +43,7 @@
                 └── train_y.parquet
         ```
 
-    -   Train model
+3. Train model
 
         ```bash
         export MLFLOW_TRACKING_URI=http://localhost:5000
@@ -52,7 +52,7 @@
 
     -   Register model: Go to mlflow UI at <http://localhost:5000> and register a new model named **phase1-prob1**
 
-3.  Deploy model predictor
+4.  Deploy model predictor
 
     -   Create model config at `data/model_config/phase-1/prob-1/model-1.yaml` with content:
 
@@ -103,7 +103,7 @@
                  └── 456.parquet
         ```
 
-4.  Improve model
+5.  Improve model
 
     -   The technique to improve model by using the prediction data is described in `improve_model.md`.
     -   Label the captured data, taking around 3 minutes
@@ -151,7 +151,7 @@
         make predictor_curl
         ```
 
-5.  Teardown
+6.  Teardown
 
     ```bash
     make teardown
